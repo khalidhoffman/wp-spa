@@ -14,7 +14,7 @@ function wp_spa_footer_meta() {
     return;
 }
 
-add_action('wp_footer', 'wp_spa_footer_meta');
+//add_action('wp_footer', 'wp_spa_footer_meta');
 
 function wp_spa_head_meta() {
     include(plugin_dir_path( __FILE__ )."/../public/ng-header.php");

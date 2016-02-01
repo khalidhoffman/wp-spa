@@ -29,6 +29,8 @@ var wp_spa_require = require.config({
         "angular-aria": "vendors/development/angular-aria",
         "angular-route": "vendors/development/angular-route",
         "angular-sanitize": "vendors/development/angular-sanitize",
+        "diff": "../node_modules/diff/dist/diff",
+        "diff-dom": "../node_modules/diff-dom/diffDOM",
         "config": "modules/config",
         "utils": "modules/utils",
         "path": "vendors/path",
@@ -38,7 +40,6 @@ var wp_spa_require = require.config({
         "controllers": "modules/controllers/index",
         "namespace": "modules/namespace",
         "$elements": "modules/elements",
-        "pages-stub": "modules/pages-stub",
         "router": "modules/router",
         "dom-scripts": "modules/models/dom-scripts",
         "wordpress": "modules/models/wordpress",
@@ -73,6 +74,9 @@ var wp_spa_require = require.config({
     shim: {
         "live": [],
         "videojs": [],
+        "diff-dom": {
+            exports: 'diffDOM'
+        },
         "jquery-noconflict": {
             "deps": ["jquery"]
         },

@@ -6,5 +6,5 @@ include helpers/_*
         'request_uri' => $_SERVER['REQUEST_URI']
     );
     $meta_json = json_encode($meta);
-script(id!='wp-meta', data-wordpress!=echo('$meta_json'), type='text/javascript')
+meta(id!='wp-meta', data-wordpress!=echo('$meta_json'), type='text/javascript')
     |window['WP_Meta'] = <?php echo $meta_json; ?>;

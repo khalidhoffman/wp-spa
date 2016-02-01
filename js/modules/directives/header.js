@@ -1,9 +1,12 @@
 define([
     'require',
     "router",
+    "diff-dom",
     'ng-app'
 ], function (require) {
-    var ngApp = require('ng-app');
+    var ngApp = require('ng-app'),
+        DiffDOM = require("diff-dom"),
+        diffDOM = new DiffDOM();
     return ngApp.directive('header', function () {
         return {
             restrict: 'AE',
@@ -14,15 +17,19 @@ define([
                 });
 
                 scope.$on('view:update', function(event, $DOM){
-                    scope.html = $DOM.find('header').html();
-                    element.html(scope.html);
+                    var diffs = diffDOM.diff(element[0],  $DOM.find('header')[0]);
+                    console.log("header.link().diffDOM = %O", diffs);
+                    diffDOM.apply(element[0], diffs);
+                    element.trigger('view:update');
+
                     element.trigger('view:update');
                 });
-            },
-            controller : ['$scope', 'spaContentProvider', function($scope, spaContentProvider){
-                console.log('header.controller(%O)', arguments);
-                $scope.html = spaContentProvider.$DOM.find('ng-content').html() || '<h1>Initializing...</h1>';
-            }]
+            }
+            //,
+            //controller : ['$scope', 'spaContentProvider', function($scope, spaContentProvider){
+            //    console.log('header.controller(%O)', arguments);
+            //    $scope.html = spaContentProvider.$DOM.find('ng-content').html() || '<h1>Initializing...</h1>';
+            //}]
         };
     });
 

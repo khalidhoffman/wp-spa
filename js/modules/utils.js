@@ -20,6 +20,9 @@ define([
                 },
             pre = 'webkit',
             domParser = new DOMParser();
+        window['WP_Meta'] = {
+            site_url : Backbone.$('base').attr('href')
+        };
 
         if (!location.origin) location.origin = location.protocol + '//' + location.host;
         if (window.getComputedStyle) {
