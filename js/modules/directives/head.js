@@ -17,7 +17,7 @@ define([
                     scope.html = $DOM.find('head').html();
                     element.find('meta').remove();
                     element.append($DOM.find('head meta'));
-                    element.find('title').replaceWith($DOM.find('title'));
+                    element.find('title').html($DOM.find('title').html());
                     element.trigger('view:update');
                 });
             },

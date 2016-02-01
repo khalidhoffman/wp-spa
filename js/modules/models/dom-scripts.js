@@ -40,16 +40,17 @@ define(
                 scriptCache : {
 
                 },
-                _writeContent : function(namespace, $element){
-                    //console.log('DOMScriptCollection._writeContent() called.');
+                _addScripts : function(namespace, $element){
+                    //console.log('DOMScriptCollection._addScripts() called.');
                     var self = this,
-                        namespace = namespace || 'page';
-                    this.scriptCache[namespace] = $element.find('script');
-                    _.forEach(this.scriptCache[namespace], function(script, index, arr){
+                        $destination = self.$body,
+                        _namespace = namespace || 'page';
+                    this.scriptCache[_namespace] = $element.find('script');
+                    _.forEach(this.scriptCache[_namespace], function(script, index, arr){
                         var $script = Backbone.$(script);
                         if(!self.hasScript($script)){
-                            console.debug('DOMScriptCollection._writeContent() - appending script', script);
-                            self.$body.append($script);
+                            console.debug('DOMScriptCollection._addScripts() - appending script', script);
+                            $destination.append($script);
                             self.add({
                                 src : $script.attr('src'),
                                 content : ($script.attr('src'))?false:$script.html()
@@ -58,14 +59,16 @@ define(
                     });
                 },
                 _write$DOM : function($DOM){
-                    var self = this;
+                    var self = this,
+                        $destination = self.$body;
 
                     // add new scripts
-                    this._writeContent('header', $DOM.find('header'));
-                    this._writeContent('footer', $DOM.find('footer'));
+                    this._addScripts('header', $DOM.find('header'));
+                    this._addScripts('footer', $DOM.find('footer'));
 
                     // save the recently added scripts
                     this._readDOM();
+                    // TODO QUESTION how is $DOM[0].scriptCache defined?
                     _.forEach($DOM[0].scriptCache, function(scriptEl, index, arr){
                         var $script = Backbone.$(scriptEl);
                         ////console.log('DOMScriptCollection._parseContent$DOM() - check for: ', $script);
@@ -79,7 +82,7 @@ define(
                             if ($script.attr('src')) script.src = $script.attr('src');
                             if (!$script.attr('src')) script.innerHTML = $script.html();
                             console.debug('DOMScriptCollection._write$DOM() - appending script', script);
-                            self.$body.append(script);
+                            $destination.append(script);
                         }
                     });
                 },

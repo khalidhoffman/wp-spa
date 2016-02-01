@@ -14,7 +14,8 @@ define([
                 });
 
                 scope.$on('view:update', function(event, $DOM){
-                    element.find('> div').replaceWith($DOM.find('footer > div'));
+                    element.find('> div').remove();
+                    element.prepend($DOM.find('footer > div').clone());
                     element.trigger('view:update');
                 });
             },
