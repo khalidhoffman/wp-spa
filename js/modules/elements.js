@@ -1,6 +1,5 @@
 define(['jquery'], function ($) {
-    var NS = require('namespace'),
-        $window = $(window),
+    var $window = $(window),
         $html = $('html'),
         $body = $html.find('body'),
         $header = $body.find('header'),

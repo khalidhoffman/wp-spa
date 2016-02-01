@@ -1,13 +1,14 @@
-require([
+wp_spa_require([
     'require',
-    'modules/ng-app',
-    '$elements',
+    'live',
     'angular',
-    'utils'
+    'directives',
+    'controllers'
 ], function (require) {
 
     var angular = require('angular');
-    angular.bootstrap(document, ['ngApp']);
+
+    angular.bootstrap(document, ['dp-spa']);
 
     //$body.append($testBtn);
 

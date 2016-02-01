@@ -2,16 +2,27 @@ define([
     'require',
     'utils',
     'wordpress',
-    'ngApp'
+    "controllers",
+    'ng-app'
 ], function (require) {
-    var ngApp = require('ngApp'),
+    var ngApp = require('ng-app'),
         utils = require('utils'),
-        wordpress = require('wordpress'),
-        viewsPath = utils.getRootPath({trailingSlash : false}) + '/wp-content/plugins/wp-spa/views/page.html';
-    return ngApp.config(["$routeProvider", function ($routeProvider) {
-        console.log('$routeProvider - wordpress pages: %O', wordpress.get('pages'));
-        console.log('$routeProvider - wordpress posts: %O', wordpress.get('posts'));
-        return $routeProvider
-            .when('*', {controller: 'mainController'})
+        wordpress = require('wordpress');
+
+    console.log("require('router')");
+    return ngApp.config(["$routeProvider", "$locationProvider", function ($routeProvider, $locationProvider) {
+        console.log("ngApp.config(() - initializing router");
+
+        $locationProvider.html5Mode(true).hashPrefix('!');
+
+        $routeProvider
+            .when('/:route*', {
+                template : function(){
+                    return "<h1>Routing...</h1>"
+                },
+                controller : 'MainController'
+            });
+
+        return $routeProvider;
     }]);
 });

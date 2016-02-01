@@ -33,5 +33,4 @@ function wp_spa_scripts() {
 //    );
 }
 
-error_log( 'url: ' . get_site_url( null, 'wp-content/plugins/wp-spa/public/js/wp-spa.js' ) );
 add_action( 'wp_enqueue_scripts', 'wp_spa_scripts', 9999 );

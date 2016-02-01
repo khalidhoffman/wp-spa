@@ -5,7 +5,7 @@ define(
         'namespace',
         'backbone'
     ],
-    function(){
+    function(require){
         var Backbone = require('backbone'),
             NS = require('namespace'),
             utils = require('utils'),

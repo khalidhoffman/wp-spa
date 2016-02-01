@@ -1,8 +1,9 @@
-var require = requirejs.config({
-    baseUrl: '/celebrationtt/src',
+var wp_spa_require = require.config({
+    baseUrl: '/celebrationtt/wp-content/plugins/wp-spa/js',
     waitSeconds: 0,
-    config : {
-        rootPath : '/'
+    context : 'dp-spa',
+    config: {
+        rootPath: '/celebrationtt'
     },
     paths: {
         "build-production": "app-prod",
@@ -32,10 +33,13 @@ var require = requirejs.config({
         "utils": "modules/utils",
         "path": "vendors/path",
         "console": "modules/console",
+        "ng-app": "modules/ng-app",
+        "directives": "modules/directives/index",
+        "controllers": "modules/controllers/index",
         "namespace": "modules/namespace",
-        "$elements": "modules/$elements",
+        "$elements": "modules/elements",
         "pages-stub": "modules/pages-stub",
-        "router": "modules/controllers/router",
+        "router": "modules/router",
         "dom-scripts": "modules/models/dom-scripts",
         "wordpress": "modules/models/wordpress",
         "header": "modules/views/view-header",

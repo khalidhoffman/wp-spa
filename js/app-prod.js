@@ -1,4 +1,4 @@
-require([
+wp_spa_require([
     'require',
     'modules/ng-app',
     '$elements',

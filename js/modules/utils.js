@@ -3,7 +3,6 @@ define([
         'config',
         'namespace',
         'jquery',
-        'path',
         '$elements'
     ],
     function (require) {
@@ -11,7 +10,6 @@ define([
         var config = require('config'),
             NS = require('namespace'),
             $ = require('jquery'),
-            path = require('path'),
             $elements = require('$elements'),
             DOMParser = DOMParser || function () {
                     return {

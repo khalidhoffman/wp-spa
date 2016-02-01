@@ -1,30 +1,33 @@
 define([
     'require',
     "router",
-    "modules/services/html-loader",
     'ng-app'
 ], function (require) {
     var ngApp = require('ng-app');
-    return ngApp.directive('ngContent', function () {
+    return ngApp.directive('head', function () {
         return {
             restrict: 'AE',
             link : function(scope, element, attrs, controller, transcludeFn){
+                console.log('head.link(%O)', arguments);
                 element.find('[href]').each(function(index, el){
                     this.setAttribute('ng-href', this.href);
                 });
 
                 scope.$on('view:update', function(event, $DOM){
-                    console.log('ngContent.link().scope.$on(view:update)', arguments);
-                    scope.html = $DOM.find('ng-content').html();
-                    element.html(scope.html);
+                    scope.html = $DOM.find('head').html();
+                    element.find('meta').remove();
+                    element.append($DOM.find('head meta'));
+                    element.find('title').replaceWith($DOM.find('title'));
                     element.trigger('view:update');
                 });
             },
             controller : ['$scope', 'spaContentProvider', function($scope, spaContentProvider){
-                console.log('ngContent.controller(%O)', arguments);
-                $scope.html = spaContentProvider.$DOM.find('ng-content').html() || '<h1>Initializing...</h1>';
+                console.log('head.controller(%O)', arguments);
+                $scope.html = spaContentProvider.$DOM.find('head').html() || '<h1>Initializing...</h1>';
             }]
         };
     });
 
-});
+});/**
+ * Created by kah8br on 1/31/16.
+ */
