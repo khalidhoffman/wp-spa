@@ -1,7 +1,7 @@
 wp_spa_require([
     'require',
     'live',
-    'angular',
+    'router',
     'directives',
     'controllers'
 ], function (require) {

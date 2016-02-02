@@ -1,13 +1,11 @@
 define([
     'require',
     'utils',
-    'wordpress',
     "controllers",
     'ng-app'
 ], function (require) {
     var ngApp = require('ng-app'),
-        utils = require('utils'),
-        wordpress = require('wordpress');
+        utils = require('utils');
 
     console.log("require('router')");
     return ngApp.config(["$routeProvider", "$locationProvider", function ($routeProvider, $locationProvider) {
@@ -15,9 +13,10 @@ define([
 
         $locationProvider.html5Mode(true).hashPrefix('!');
 
-        var defaultRouterParams = {
+        var $ngView = angular.element('div[ng-view]');
+            defaultRouterParams = {
             template : function(){
-                return "<ng-content></ng-content>"
+                return "<ng-content>"+$ngView.html()+"</ng-content>"
             },
             controller : 'MainController'
         };

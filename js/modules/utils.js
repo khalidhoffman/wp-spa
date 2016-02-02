@@ -1,16 +1,10 @@
 define([
         'require',
-        'config',
-        'namespace',
-        'jquery',
-        '$elements'
+        'jquery'
     ],
     function (require) {
 
-        var config = require('config'),
-            NS = require('namespace'),
-            $ = require('jquery'),
-            $elements = require('$elements'),
+        var $ = require('jquery'),
             DOMParser = DOMParser || function () {
                     return {
                         parseFromString: function (DOMString) {
@@ -38,7 +32,7 @@ define([
                 console.error("Couldn't determine browser prefix: ", e);
             }
         }
-        NS.utils = {
+        var utils = {
             browserPrefix: pre,
             setPrefixedStyle: function (el, cssProperty, cssValue) {
                 if (pre == "") {
@@ -46,9 +40,6 @@ define([
                 } else {
                     el.style[pre + cssProperty] = cssValue;
                 }
-            },
-            isMobile: function () {
-                return (window.innerWidth < config.breakpoints.mobile);
             },
             reverseArray: function reverse(a) {
                 var temp = [],
@@ -188,7 +179,7 @@ define([
                 $('html, body').scrollTop((scrollTop < 0) ? 0 : scrollTop); // +2 for good measure
             },
             getCurrentPath: function () {
-                return location.pathname.substr(NS.utils.getRootPath({trailingSlash: false}).length);
+                return location.pathname.substr(utils.getRootPath({trailingSlash: false}).length);
             },
             /**
              * Returns the root path
@@ -219,7 +210,7 @@ define([
              */
             getPathFromUrl: function (url) {
 
-                var domainUrl = NS.utils.getRootUrl(false),
+                var domainUrl = utils.getRootUrl(false),
                     pathStartIndex = url.indexOf(domainUrl) + domainUrl.length;
                 return url.substr(pathStartIndex);
 
@@ -279,5 +270,5 @@ define([
             }
         };
 
-        return NS.utils;
+        return utils;
     });

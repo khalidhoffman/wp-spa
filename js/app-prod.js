@@ -1,8 +1,8 @@
 wp_spa_require([
     'require',
-    'modules/ng-app',
-    '$elements',
-    'utils'
+    'router',
+    'directives',
+    'controllers'
 ], function (require) {
 
     //angular.bootstrap(document, ['ngApp']);

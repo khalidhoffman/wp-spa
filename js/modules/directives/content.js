@@ -8,10 +8,10 @@ define([
         return {
             restrict: 'AE',
             link : function(scope, element, attrs, controller, transcludeFn){
-                console.log('ngContent.link()');
                 element.find('[href]').each(function(index, el){
                     this.setAttribute('ng-href', this.href);
                 });
+
 
                 scope.$on('view:update', function(event, $DOM){
                     console.log('ngContent.link().scope.$on(view:update)', arguments);
