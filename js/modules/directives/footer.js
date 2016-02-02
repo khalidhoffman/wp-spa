@@ -1,6 +1,5 @@
 define([
     'require',
-    "router",
     "diff-dom",
     'ng-app'
 ], function (require) {
