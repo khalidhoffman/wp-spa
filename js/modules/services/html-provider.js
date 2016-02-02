@@ -15,6 +15,7 @@ define([
             console.log("spaContent.$rootScope.$on('$routeChangeSuccess')(%O)", arguments);
 
             var route = (to && to.pathParams && to.pathParams.route) ? to.pathParams.route : './';
+
             if (self._cache[route]) {
                 self.$DOM = self._cache[route];
                 console.log('spaContent._cache[%s] = (%O)', route, self.$DOM);
@@ -31,7 +32,7 @@ define([
                     console.log("spaContent.$http.get(%s).success.$rootScope.$broadcast('view:update')", route);
                     $rootScope.$broadcast('view:update', self.$DOM, to, from);
                 }, function failure(response) {
-                    throw new Error('spaContent.http.get("' + route + '") - Failed:' + response)
+                    throw new Error('spaContent.http.get("' + route + '") - Failed:' + response);
                 });
             }
         });

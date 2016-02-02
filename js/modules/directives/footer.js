@@ -22,16 +22,6 @@ define([
                     element.trigger('view:update');
                 });
             }
-            //,
-            //controller: ['$scope', '$element', 'spaContentProvider', function ($scope, $element, spaContentProvider) {
-            //    console.log('footer.controller(%O)', arguments);
-            //    $scope.html = spaContentProvider.$DOM.find('footer').html() || '<h1>Initializing...</h1>';
-            //    $scope.scriptCache = [];
-            //    $element.find('script').each(function (index, script) {
-            //        console.log("footer.controller().$element.find('script') - saving %s", script.outerHTML);
-            //        $scope.scriptCache.push((script.src || script.innerHTML))
-            //    })
-            //}]
         };
     });
 
