@@ -2,21 +2,21 @@ define([
     'require',
     'utils',
     "controllers",
+    "modules/services/template-provider",
     'ng-app'
 ], function (require) {
     var ngApp = require('ng-app'),
         utils = require('utils');
 
     console.log("require('router')");
-    return ngApp.config(["$routeProvider", "$locationProvider", function ($routeProvider, $locationProvider) {
+    return ngApp.config(["$routeProvider", "$locationProvider", '_$templateProvider', function ($routeProvider, $locationProvider, _$templateProvider) {
         console.log("ngApp.config(() - initializing router");
 
         $locationProvider.html5Mode(true).hashPrefix('!');
 
-        var $ngView = angular.element('div[ng-view]');
-            defaultRouterParams = {
+        var defaultRouterParams = {
             template : function(){
-                return "<ng-content>"+$ngView.html()+"</ng-content>"
+                return "<ng-content>"+_$templateProvider.getDefaultContent()+"</ng-content>"
             },
             controller : 'MainController'
         };

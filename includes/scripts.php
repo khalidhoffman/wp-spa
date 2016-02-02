@@ -11,22 +11,22 @@ function wp_spa_scripts() {
         true
     );
     wp_enqueue_script(
-        'require-wp-spa-admin',
+        'require-wp-spa',
         get_site_url( null, 'wp-content/plugins/wp-spa/js/rjs-config.js' ),
         array( 'require' ),
         false,
         true
     );
     wp_enqueue_script(
-        'wp-spa-admin',
+        'wp-spa',
         get_site_url( null, 'wp-content/plugins/wp-spa/js/app-dev.js' ),
-        array( 'require-wp-spa-admin' ),
+        array( 'require-wp-spa' ),
         false,
         true
     );
 //    wp_enqueue_script(
-//        'wp-spa-admin',
-//        get_site_url(null, 'wp-content/plugins/wp-spa/admin/js/wp-spa.js'),
+//        'wp-spa',
+//        get_site_url(null, 'wp-content/plugins/wp-spa/public/js/wp-spa.js'),
 //        array(),
 //        false,
 //        true

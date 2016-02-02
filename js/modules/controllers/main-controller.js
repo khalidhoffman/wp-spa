@@ -1,6 +1,6 @@
 define([
     'require',
-    'modules/services/html-loader',
+    'modules/services/html-provider',
     'ng-app'
 ], function (require) {
     var ngApp = require('ng-app');
