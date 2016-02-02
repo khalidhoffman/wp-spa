@@ -21,8 +21,6 @@ define([
                     console.log("header.link().diffDOM = %O", diffs);
                     diffDOM.apply(element[0], diffs);
                     element.trigger('view:update');
-
-                    element.trigger('view:update');
                 });
             }
             //,

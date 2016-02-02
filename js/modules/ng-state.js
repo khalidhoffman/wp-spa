@@ -11,9 +11,7 @@ define([
         var self = this,
             State = Backbone.Model.extend({
                 defaults : {
-                    isContentListenerActive : false,
-                    isHeaderListenerActive : false,
-                    isFooterListenerActive : false
+
                 }
             });
 

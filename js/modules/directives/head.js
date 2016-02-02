@@ -1,8 +1,6 @@
 define([
     'require',
     "router",
-    "diff-dom",
-    "underscore",
     'ng-app'
 ], function (require) {
     var ngApp = require('ng-app');
@@ -16,10 +14,11 @@ define([
                 });
 
                 scope.$on('view:update', function (event, $DOM) {
-                    scope.html = $DOM.find('head').html();
+                    console.log("head.link().scope.$on('view:update')");
+                    var $head = $DOM.find('head');
                     element.find('meta').remove();
-                    element.append($DOM.find('head meta'));
-                    element.find('title').html($DOM.find('title').html());
+                    element.append($head.find('meta'));
+                    element.find('title').html($head.find('title').html());
                     element.trigger('view:update');
                 });
             }

@@ -15,13 +15,16 @@ define([
 
         $locationProvider.html5Mode(true).hashPrefix('!');
 
+        var defaultRouterParams = {
+            template : function(){
+                return "<ng-content></ng-content>"
+            },
+            controller : 'MainController'
+        };
+
         $routeProvider
-            .when('/:route*', {
-                template : function(){
-                    return "<h1>Routing...</h1>"
-                },
-                controller : 'MainController'
-            });
+            .when('/:route*', defaultRouterParams)
+            .otherwise(defaultRouterParams);
 
         return $routeProvider;
     }]);

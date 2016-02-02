@@ -2,7 +2,6 @@ define([
     'require',
     "router",
     "diff-dom",
-    "jquery",
     'ng-app'
 ], function (require) {
     var ngApp = require('ng-app'),
