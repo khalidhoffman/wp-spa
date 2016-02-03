@@ -1,6 +1,7 @@
-var wp_spa_require = require.config({
+var require = require.config({
     baseUrl: '/celebrationtt/wp-content/plugins/wp-spa/js',
     waitSeconds: 0,
+    namespace: 'wp_spa',
     config: {
         rootPath: '/celebrationtt'
     },
