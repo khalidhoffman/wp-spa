@@ -113,7 +113,7 @@ class Wp_Spa_Admin {
 
 		$this->plugin_screen_hook_suffix = add_options_page(
 			__( 'WP-SPA Settings', $this->plugin_text_namespace ),
-			__( 'WP-SPA API',  $this->plugin_text_namespace),
+			__( 'WP-SPA Settings',  $this->plugin_text_namespace),
 			'manage_options',
 			$this->plugin_name,
 			array( $this, 'display_options_page' )

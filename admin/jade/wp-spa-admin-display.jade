@@ -19,6 +19,6 @@ include _auto-generated/_-all
             a.button.button-primary.button--update(href="#") Update WP-SPA
         .setting-section.setting-section--vars
             :php
-                settings_field($this->plugin_name);
+                settings_fields($this->plugin_name);
                 do_settings_sections($this->plugin_name);
                 submit_buttton();
