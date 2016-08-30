@@ -1,11 +1,12 @@
 {
   "name": "wp-spa",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Converts a WordPress site to a SPA",
   "main": "index.php",
   "scripts": {
     "test": "jasmine",
     "webpack": "webpack ./public/js/src/",
+    "install:composer": "composer install",
     "setup": "dp-setup"
   },
   "repository": {
