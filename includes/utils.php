@@ -42,3 +42,6 @@ if(!function_exists('get_json_sitemap')){
         return $urls;
     }
 }
+
+if(!function_exists('generate_json_config')){
+}

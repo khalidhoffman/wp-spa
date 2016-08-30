@@ -1,0 +1,14 @@
+{
+    "name": "dpdev/wp-spa",
+    "description": "WordPress SPA Plugin",
+    "require-dev": {
+        "monolog/monolog": "^1.21"
+    },
+    "authors": [
+        {
+            "name": "Khalid Hoffman",
+            "email": "khaliddpdev@gmail.com"
+        }
+    ],
+    "require": {}
+}

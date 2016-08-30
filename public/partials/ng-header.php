@@ -1,4 +1,4 @@
-<base href="<?php echo get_site_url().'/'; ?>"/><style>[ng-cloak],
+<base href="<?php echo get_site_url().'/'; ?>"><style>[ng-cloak],
 [data-ng-cloak],
 [x-ng-cloak],
     .ng-cloak,
