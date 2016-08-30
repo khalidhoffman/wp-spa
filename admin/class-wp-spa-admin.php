@@ -104,6 +104,22 @@ class Wp_Spa_Admin {
 
 	}
 
+	/**
+	 * Add an options page under the Settings submenu
+	 *
+	 * @since  1.0.0
+	 */
+	public function add_options_page() {
+
+		$this->plugin_screen_hook_suffix = add_options_page(
+			__( 'WP-SPA Settings', $this->plugin_text_namespace ),
+			__( 'WP-SPA API',  $this->plugin_text_namespace),
+			'manage_options',
+			$this->plugin_name,
+			array( $this, 'display_options_page' )
+		);
+
+	}
 
 	/**
 	 * Render the options page for plugin
@@ -120,7 +136,7 @@ class Wp_Spa_Admin {
 	}
 
 
-	public function add_setting($option_name, $label = "New Option"){
+	private function add_setting($option_name, $label = "New Option"){
 
 		$option_namespace_suffix = $this->generate_option_namespace_suffix($option_name);
 		register_setting( $this->plugin_name, $this->option_namespace . $option_namespace_suffix, array(
