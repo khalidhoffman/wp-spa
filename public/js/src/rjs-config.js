@@ -37,7 +37,7 @@ var require = require.config({
         "ng-app": "modules/ng-app",
         "directives": "modules/directives/index",
         "controllers": "modules/controllers/index",
-        "ng-router": "modules/router",
+        "ng-router": "modules/ng-router",
         "wordpress": "modules/models/wordpress",
         "dp-animate": "modules/views/widgets/jquery.dp-animate",
         "sass": "//192.168.1.119/v7/src/vendors/sass",

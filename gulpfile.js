@@ -39,6 +39,15 @@ gulp.task('auto', function(){
     });
     gulpLib('project/chrome-sync').start();
 });
+gulp.task('webpack', function(done){
+    var childProcess = require('child_process');
+    childProcess.exec("npm run webpack", function(){
+        for(var i  = 0 ; i < arguments.length; i++){
+            console.log(arguments[i]);
+        }
+        done.apply(null, arguments);
+    });
+});
 // CSS tasks
 
 gulp.task('stylus', gulpLib('stylus').compile);

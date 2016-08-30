@@ -1,3 +1,3 @@
-define(['jquery'], function (jq) {
+define(['jquery-original'], function (jq) {
     return jq.noConflict( false );
 });

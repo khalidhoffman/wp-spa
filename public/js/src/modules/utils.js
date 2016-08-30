@@ -1,5 +1,8 @@
 define([
         'require',
+        'url',
+        'state',
+        'json!../../../../data/wp-spa.config.json',
         'jquery'
     ],
     function (require) {
@@ -13,10 +16,13 @@ define([
                     }
                 },
             pre = 'webkit',
+            url = require('url'),
+            spaState = require('state');
             domParser = new DOMParser();
-        window['WP_Meta'] = {
-            site_url : $('base').attr('href')
-        };
+        window['WP_Meta'] = require('json!../../../../data/wp-spa.config.json');
+        spaState.set('host', url.parse(window['WP_Meta'].siteURL));
+        spaState.set('siteURL', window['WP_Meta'].siteURL);
+
 
         if (!location.origin) location.origin = location.protocol + '//' + location.host;
         if (window.getComputedStyle) {
@@ -188,11 +194,8 @@ define([
              * @returns {String}
              */
             getRootPath: function (options) {
-                var productionDomainRegex = /\/$/,
-                    _options = {trailingSlash: (options && options.trailingSlash === false) ? false : true},
-                    rootPath = module.config().rootPath;
-                if (!rootPath) throw new Error('utils.getRootPath() - rootPath not defind. This is done via the requirejs config');
-                return (productionDomainRegex.test(rootPath) ? rootPath : (rootPath + ((_options.trailingSlash) ? '/' : '')));
+                var siteURLMeta =  url.parse(WP_Meta['siteURL']);
+                return siteURLMeta.host;
             },
             /**
              *
@@ -201,19 +204,15 @@ define([
              * @returns {string} - site's root url
              */
             getRootUrl: function (options) {
-                return window.WP_Meta['site_url'] + ((options && options.trailingSlash === false) ? '' : '/');
+                return window.WP_Meta['siteURL'] + ((options && options.trailingSlash === false) ? '' : '/');
             },
             /**
              *
-             * @param {String} url
+             * @param {String} requestURL
              * @returns {string}
              */
-            getPathFromUrl: function (url) {
-
-                var domainUrl = utils.getRootUrl(false),
-                    pathStartIndex = url.indexOf(domainUrl) + domainUrl.length;
-                return url.substr(pathStartIndex);
-
+            getPathFromUrl: function (requestURL) {
+                return url.resolve(spaState.get('host').pathname, requestURL);
             },
             /**
              * Sanitizes a path/url aka adds trailing slash if need be to any path
@@ -221,7 +220,7 @@ define([
              * @returns {string}
              */
             sanitizeUrl: function (url) {
-                return (url[url.length - 1] == '/') ? url : url + '/';
+                return (url.match('/\/$/')) ? url : url + '/';
             },
             /**
              *

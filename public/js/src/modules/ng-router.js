@@ -18,7 +18,7 @@ define([
             template : function(){
                 return "<ng-content>"+_$templateProvider.getDefaultContent()+"</ng-content>"
             },
-            controller : 'MainController'
+            controller : 'mainController'
         };
 
         $routeProvider

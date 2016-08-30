@@ -41,39 +41,23 @@ module.exports = {
         modulesDirectories: ['./', '../../../node_modules'],
         extensions: ['', '.js'],
         alias: {
-            "build-production": "app-prod",
-
-            "require-lib": "vendors/requirejs/require",
-            "domReady": "vendors/domReady/domReady",
-            "text": "vendors/text/text",
-
-            "underscore": "lodash",
-            "backbone": "vendors/backbone/backbone",
-            "moment": "vendors/moment/moment",
-
-            "jquery-original": "vendors/jquery-3.0.0.min",
-            "modernizr": "vendors/modernizr-custom",
-            "live": "vendors/live",
-
             "ng-app": "modules/ng-app",
+            "ng-router": "modules/ng-router",
+            "ng-state": "modules/ng-state",
             "directives": "modules/directives/index",
             "controllers": "modules/controllers/index",
-            "ng-router": "modules/router",
-            "wordpress": "modules/models/wordpress",
 
+            "wordpress": "modules/models/wordpress",
             "config": "modules/config",
             "null-module": "modules/null-module",
             "utils": "modules/utils",
-            "console": "modules/console",
-            "google-maps": "modules/views/view-maps",
-            "namespace": "modules/namespace",
-            "$elements": "modules/jquery-elements",
-            "header": "modules/views/view-header",
-            "router": "modules/controllers/router",
-            "view-active": "modules/views/view-active",
-            "jquery-angled-text": "modules/views/widgets/jquery.angled-text",
-            "jquery-clipped": "modules/views/widgets/jquery.clipped",
-            "jquery": "vendors/jquery-noconflict"
+
+            "jquery-original": "vendors/jquery-3.1.0.min",
+            "jquery": "vendors/jquery-noconflict",
+
+            "live": "vendors/live",
+            "moment": "vendors/moment/moment",
+            "underscore": "lodash"
         }
     },
     shim: {
@@ -95,5 +79,9 @@ module.exports = {
         new ModuleReplace(/^css!.+$/, function(ctx) {
             ctx.request = 'style!' + ctx.request;
         })
-    ]
+    ],
+    node : {
+        'path': true,
+        'url': true
+    }
 };
