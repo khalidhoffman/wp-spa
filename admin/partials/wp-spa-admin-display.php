@@ -10,4 +10,4 @@
 * @subpackage Wp_Spa/admin/partials
 */ ?><div class="heading"><div class="heading_content"><?php echo esc_html(get_admin_page_title());; ?></div></div><div class="settings"><div class="setting__content"><div class="setting-section setting-section--actions"><a href="#" class="button button-primary button--update">Update WP-SPA</a></div><div class="setting-section setting-section--vars"><?php settings_fields($this->plugin_name);
 do_settings_sections($this->plugin_name);
-submit_buttton(); ?></div></div></div>
+submit_button(); ?></div></div></div>
