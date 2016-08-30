@@ -150,4 +150,10 @@ class Wp_Spa_Public {
 
 	}
 
+	public function handle_request() {
+		error_log( "making request to {$_POST['endpoint']} with {$_POST['data']}" );
+		$response = $this->get_request_result( $_POST['endpoint'], $_POST['data'], $_POST['method'] );
+		die( 'success' );
+	}
+
 }

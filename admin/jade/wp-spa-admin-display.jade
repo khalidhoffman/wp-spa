@@ -11,7 +11,14 @@ include _auto-generated/_-all
     * @package    Wp_Spa
     * @subpackage Wp_Spa/admin/partials
     */
+.heading
+    .heading_content!=echo("esc_html(get_admin_page_title());")
 .settings
     .setting__content
-        .setting-section
-            button.btn.btn--update(ng-click="#") Update WP-SPA
+        .setting-section.setting-section--actions
+            a.button.button-primary.button--update(href="#") Update WP-SPA
+        .setting-section.setting-section--vars
+            :php
+                settings_field($this->plugin_name);
+                do_settings_sections($this->plugin_name);
+                submit_buttton();

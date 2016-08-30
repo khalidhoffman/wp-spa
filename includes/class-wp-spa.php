@@ -195,6 +195,9 @@ class Wp_Spa {
 
 		$plugin_admin = new Wp_Spa_Admin( $this->get_plugin_name(), $this->get_version() );
 
+		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_setting' );
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_options_page' );
+
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 
@@ -213,6 +216,8 @@ class Wp_Spa {
 
 		$this->loader->add_filter( 'template_include', $plugin_public, 'set_current_theme_template', 1000 );
 
+		$this->loader->add_action( 'wp_ajax_nopriv_wp_spa', $plugin_public, 'handle_request' );
+		$this->loader->add_action( 'wp_ajax_wp_spa', $plugin_public, 'handle_request' );
 		$this->loader->add_action( 'template_redirect', $plugin_public, 'wp_spa_show_json_sitemap' );
 		$this->loader->add_action( 'wp_footer', $plugin_public, 'wp_spa_footer_meta' );
 		$this->loader->add_action( 'wp_head', $plugin_public, 'wp_spa_head_meta' );

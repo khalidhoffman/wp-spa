@@ -44,4 +44,13 @@ if(!function_exists('get_json_sitemap')){
 }
 
 if(!function_exists('generate_json_config')){
+	function generate_json_config(){
+		$config = array(
+			'siteURL' => get_site_url()
+		);
+		$location = dirname(__DIR__ . '../') . '/data/wp-spa.config.json';
+		$fp = fopen($location, 'w');
+		fwrite($fp, json_encode($config));
+		fclose($fp);
+	}
 }

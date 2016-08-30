@@ -9,13 +9,13 @@ var path = require('path'),
             path : '/'
         };
         try {
-            var localConfigStr = fs.readFileSync(path.resolve(__dirname, '../../data/wp-spa.config.json')),
+            var localConfigStr = fs.readFileSync(path.resolve(__dirname, 'data/wp-spa.config.json')),
                 localConfig = JSON.parse(localConfigStr),
                 siteURLMeta = url.parse(localConfig.siteURL);
             config.domain = siteURLMeta.host;
             config.path = siteURLMeta.pathname;
         } catch(err){
-
+            console.warn(err);
         }
         return config;
     })(),
@@ -23,10 +23,10 @@ var path = require('path'),
     ModuleReplace = webpack.NormalModuleReplacementPlugin;
 
 module.exports = {
-    entry: "./app-dev.js",
-    context: __dirname,
+    entry: "app-dev.js",
+    context: path.resolve(__dirname, 'public/js/src/'),
     output: {
-        path: '../',
+        path: './public/js/',
         publicPath: wpConfig.path,
         filename: "wp-spa-public.js"
     },
@@ -37,8 +37,8 @@ module.exports = {
         }]
     },
     resolve: {
+        root: path.resolve(__dirname, 'public/js/src/'),
         modulesDirectories: ['./', '../../../node_modules'],
-        root: path.resolve(__dirname),
         extensions: ['', '.js'],
         alias: {
             "build-production": "app-prod",
@@ -47,23 +47,19 @@ module.exports = {
             "domReady": "vendors/domReady/domReady",
             "text": "vendors/text/text",
 
-            "underscore": "vendors/lodash/dist/lodash",
+            "underscore": "lodash",
             "backbone": "vendors/backbone/backbone",
-            "lightbox": "vendors/lightbox2/dist/js/lightbox",
-            "selectize": "vendors/selectize.js/dist/js/standalone/selectize",
-            "slick": "vendors/slick/slick/slick",
             "moment": "vendors/moment/moment",
 
             "jquery-original": "vendors/jquery-3.0.0.min",
-            "jquery-ui": "vendors/jquery-ui-1.11.4.custom/jquery-ui",
-            "jquery-masonry": "vendors/masonry-custom",
-            "jquery-copycss": "vendors/jquery.copycss",
-            "lazyload": "vendors/jquery.lazyload",
             "modernizr": "vendors/modernizr-custom",
-            "URI": "vendors/URI",
             "live": "vendors/live",
-            "masonry": "vendors/masonry.pkgd.min",
-            "masonry-imagesloaded": "vendors/imagesloaded",
+
+            "ng-app": "modules/ng-app",
+            "directives": "modules/directives/index",
+            "controllers": "modules/controllers/index",
+            "ng-router": "modules/router",
+            "wordpress": "modules/models/wordpress",
 
             "config": "modules/config",
             "null-module": "modules/null-module",
@@ -72,45 +68,16 @@ module.exports = {
             "google-maps": "modules/views/view-maps",
             "namespace": "modules/namespace",
             "$elements": "modules/jquery-elements",
-            "pages-stub": "modules/pages-stub",
             "header": "modules/views/view-header",
             "router": "modules/controllers/router",
             "view-active": "modules/views/view-active",
             "jquery-angled-text": "modules/views/widgets/jquery.angled-text",
             "jquery-clipped": "modules/views/widgets/jquery.clipped",
-            "jquery": "vendors/jquery-noconflict",
-            "jquery-parallax": "modules/views/widgets/jquery.parallax",
-            "jquery-lazy-parallax": "modules/views/widgets/jquery.lazy-parallax",
-            "jquery-visiware": "modules/views/widgets/jquery-visiware/jquery.visiware",
-            "jquery-morph": "modules/views/widgets/jquery.morph",
-            "dp-animate": "modules/views/widgets/jquery.dp-animate",
-            "jquery-dp-animate": "modules/views/widgets/jquery.dp-animate"
+            "jquery": "vendors/jquery-noconflict"
         }
     },
     shim: {
         "live": [],
-        "jquery-ui": {
-            "deps": ["jquery"]
-        },
-        "slick": {
-            "deps": ["jquery"]
-        },
-        "selectize": {
-            "deps": ["jquery"],
-            "exports": "Selectize"
-        },
-        "jquery-copycss": {
-            "deps": ["jquery"]
-        },
-        "lazyload": {
-            "deps": ["jquery"]
-        },
-        "masonry": {
-            "deps": ["jquery"]
-        },
-        "lightbox": {
-            "deps": ["jquery"]
-        },
         'modernizr': {
             "exports": 'Modernizr'
         }

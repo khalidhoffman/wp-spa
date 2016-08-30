@@ -5,7 +5,11 @@ wp_spa_require([
     'directives',
     'controllers'
 ], function (require) {
-    angular.bootstrap(document, ['dp-spa']);
+    var router = require('ng-router'),
+        controllers = require('controllers'),
+        directives = require('directives');
+
+    window.angular.bootstrap(document, ['dp-spa']);
 
     //$body.append($testBtn);
 

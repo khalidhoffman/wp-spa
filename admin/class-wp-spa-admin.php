@@ -31,6 +31,10 @@ class Wp_Spa_Admin {
 	 */
 	private $plugin_name;
 
+	private $option_namespace = 'wp_spa';
+	private $plugin_text_namespace = 'wp_spa';
+	private $main_settings_option_name = 'general';
+
 	/**
 	 * The version of this plugin.
 	 *
@@ -98,6 +102,75 @@ class Wp_Spa_Admin {
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/wp-spa-admin.js', array( 'jquery' ), $this->version, false );
 
+	}
+
+
+	/**
+	 * Render the options page for plugin
+	 *
+	 * @since  1.0.0
+	 */
+	public function display_options_page() {
+		include_once 'partials/wp-spa-admin-display.php';
+	}
+
+
+	private function generate_option_namespace_suffix($option_name){
+		return '_' . $option_name;
+	}
+
+
+	public function add_setting($option_name, $label = "New Option"){
+
+		$option_namespace_suffix = $this->generate_option_namespace_suffix($option_name);
+		register_setting( $this->plugin_name, $this->option_namespace . $option_namespace_suffix, array(
+			$this,
+			$this->option_namespace . '_sanitize' . $option_namespace_suffix
+		) );
+
+		add_settings_field(
+			$this->option_namespace . $option_namespace_suffix,
+			__( $label, $this->plugin_text_namespace ),
+			array( $this, $this->option_namespace . $option_namespace_suffix . '_cb' ),
+			$this->plugin_name,
+			$this->option_namespace . $this->generate_option_namespace_suffix($this->main_settings_option_name),
+			array( 'label_for' => $this->option_namespace . $option_namespace_suffix )
+		);
+	}
+
+	public function register_settings() {
+		add_settings_section(
+			$this->option_namespace . $this->generate_option_namespace_suffix($this->main_settings_option_name),
+			__( 'General', $this->plugin_text_namespace ),
+			array( $this, 'options_heading' ),
+			$this->plugin_name
+		);
+
+		$this->add_setting('test', "Test");
+
+		register_setting( $this->plugin_name, $this->option_namespace . '_tokenExpiration');
+		register_setting( $this->plugin_name, $this->option_namespace . '_token' );
+	}
+
+	/**
+	 * Render the text for the general section
+	 *
+	 * @since  1.0.0
+	 */
+	public function options_heading() {
+		echo '<p>' . __( 'WP-SPA.', $this->plugin_text_namespace ) . '</p>';
+	}
+
+
+	/**
+	 * Render the input field for API Key
+	 *
+	 * @since  1.0.0
+	 */
+	public function wp_spa_test_cb() {
+		$option_suffix = $this->generate_option_namespace_suffix('test');
+		$retailerId  = get_option( $this->option_namespace . $option_suffix );
+		echo '<input type="text" name="' . $this->option_namespace . $option_suffix . '" id="' . $this->option_namespace . $option_suffix . '" value="' . $retailerId . '"> ';
 	}
 
 	function wp_spa_show_json_sitemap() {
