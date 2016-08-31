@@ -3,9 +3,13 @@ define([
     'lodash',
     'modules/services/content-service',
     "diff-dom",
+    'utils',
+    "jquery",
     'ng-app'
 ], function (require) {
     var _ = require('lodash'),
+        $ = require('jquery'),
+        utils = require('utils'),
         DiffDOM = require('diff-dom'),
         diffDOM = new DiffDOM(),
         ngApp = require('ng-app');
@@ -13,30 +17,36 @@ define([
     return ngApp.directive('body', function () {
         return {
             restrict: 'AE',
-            controller : ['$scope', '$element', '$location', 'contentService', function($scope, $element, $location,contentService){
+            controller: ['$scope', '$element', '$location', 'contentService', function ($scope, $element, $location, contentService) {
                 console.log('ngBody.controller.initialize()');
 
-                interceptAction = function(evt){
+                function interceptAction(evt) {
+                    console.log('ngBody.interceptAction()');
                     var href = evt.currentTarget.href;
-                    if(contentService.wordpress.hasPageSync(href) || contentService.wordpress.hasPostSync(href)){
+                    console.log('ngBody.interceptAction() - intercepting route to %s', href);
+                    if (contentService.wordpress.hasPageSync(href) || contentService.wordpress.hasPostSync(href)) {
+                        console.log('ngBody.interceptAction()  - routing to %s', utils.getPathFromUrl(href));
                         evt.preventDefault();
-                        $location.url(href);
+                        $scope.$apply(function () {
+                            $location.path(utils.getPathFromUrl(href));
+                        });
                     }
-                };
+                }
 
-                $scope.destroyClickables = function(){
-                    if($scope.clickables) $scope.clickables.off('click', null, interceptAction);
+                $scope.destroyClickables = function () {
+                    console.log('ngBody.destroyClickables()');
+                    if ($scope.clickables) $scope.clickables.off('click', null, interceptAction);
                     delete $scope.clickables;
                 };
 
-                $scope.createClickables = function(){
-                    console.log('setting clickables');
+                $scope.createClickables = function () {
+                    console.log('ngBody.createClickables()');
                     $scope.clickables = $element.find('[href]');
-                    if($scope.interceptAction) $scope.clickables.on('click', interceptAction);
+                    if (interceptAction) $scope.clickables.on('click', interceptAction);
                 };
 
-                $scope.sanitize = function(){
-                    $scope.clickables.each(function(index, el){
+                $scope.sanitize = function () {
+                    $scope.clickables.each(function (index, el) {
                         this.setAttribute('ng-href', this.href);
                     });
                 };
@@ -44,21 +54,53 @@ define([
                 $scope.createClickables();
 
 
-                $scope.$on('view:update', function (event, $DOM) {
-                    $scope.destroyClickables();
+                $scope.$on('head:update', function (event, $DOM, route) {
                     console.log("body.controller.$scope.$on('view:update')");
+                    $scope.destroyClickables();
                     // var $body = $DOM.find('body');
                     var $body = $DOM.find('body'),
-                        diffs = diffDOM.diff($element[0],  $body[0]);
-                    console.log("body.diffDOM = %O", diffs);
-                    diffDOM.apply($element[0], diffs);
-                    var $ngView = $element.find('[ng-view]');
-                    console.log('sanitizing ngView: %o', $ngView);
-                    $ngView.removeAttr('ng-cloak');
+                        $spaContent = $body.find('.spa-content__content'),
+                        $liveSPAContent = $element.find('.spa-content__content');
+                    console.log('body.view:update - new $spaContent: %o', $spaContent);
 
-                    _.forEach($body[0].attributes, function(attr, index){
+                    // remove scripts from new DOM.body
+                    // var scripts = [],
+                    //     $scripts = $spaContent.find('script');
+                    // console.log('removing scripts from incoming DOM.body');
+                    // $scripts.each(function (scriptEl, index) {
+                    //     var $script = $(scriptEl),
+                    //         $parent = $script.parent(),
+                    //         parentId = route + index;
+                    //     $parent.attr('data-spa-parent-id', parentId);
+                    //     $script.remove();
+                    //     scripts.push({
+                    //         parentId: parentId,
+                    //         $script: $script
+                    //     })
+                    // });
+
+                    // update DOM.body
+                    // console.log('ngBody.view:update - updating DOM.body.spa-content');
+                    // var diffs = diffDOM.diff($liveSPAContent[0], $spaContent[0]);
+                    // console.log("ngBody.view:update - diffDOM = %O", diffs);
+                    // diffDOM.apply($liveSPAContent[0], diffs);
+                    // $element.find('script').remove();
+                    $liveSPAContent.replaceWith($spaContent);
+
+                    _.forEach($body[0].attributes, function (attr, index) {
                         $element.attr(attr.name, attr.value);
                     });
+
+                    // apply scripts from new DOM.body
+                    // console.log('apply scripts from incoming DOM.body')
+                    // _.forEach(scripts, function (scriptData, index) {
+                    //     scriptData.$script.appendTo($element.find("[data-spa-parent-id='" + scriptData.parentId +"']"));
+                    // });
+
+                    // remove ng-cloak
+                    // var $ngView = $element.find('[ng-view]');
+                    // $ngView.removeAttr('ng-cloak');
+
 
                     $scope.createClickables();
                     $scope.sanitize();

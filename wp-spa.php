@@ -1,5 +1,5 @@
 <?php
-
+require_once ('vendor/autoload.php');
 require('includes/utils.php');
 /**
  * The plugin bootstrap file

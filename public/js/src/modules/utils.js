@@ -20,11 +20,10 @@ define([
             spaState = require('state');
             domParser = new DOMParser();
         window['WP_Meta'] = require('json!../../../../data/wp-spa.config.json');
-        spaState.set('host', url.parse(window['WP_Meta'].siteURL));
         spaState.set('siteURL', window['WP_Meta'].siteURL);
+        spaState.set('siteURLMeta', url.parse(spaState.get('siteURL')));
 
 
-        if (!location.origin) location.origin = location.protocol + '//' + location.host;
         if (window.getComputedStyle) {
             // TODO simplify code
             var styles = window.getComputedStyle(document.documentElement, '');
@@ -194,8 +193,7 @@ define([
              * @returns {String}
              */
             getRootPath: function (options) {
-                var siteURLMeta =  url.parse(WP_Meta['siteURL']);
-                return siteURLMeta.host;
+                return spaState.get('siteURLMeta').pathname;
             },
             /**
              *
@@ -204,7 +202,7 @@ define([
              * @returns {string} - site's root url
              */
             getRootUrl: function (options) {
-                return window.WP_Meta['siteURL'] + ((options && options.trailingSlash === false) ? '' : '/');
+                return spaState.get('siteURL') + ((options && options.trailingSlash === false) ? '' : '/');
             },
             /**
              *
@@ -212,7 +210,9 @@ define([
              * @returns {string}
              */
             getPathFromUrl: function (requestURL) {
-                return url.resolve(spaState.get('host').pathname, requestURL);
+                var domainUrl = utils.getRootUrl({trailingSlash: false}),
+                    pathStartIndex = requestURL.indexOf(domainUrl) + domainUrl.length;
+                return requestURL.substr(pathStartIndex);
             },
             /**
              * Sanitizes a path/url aka adds trailing slash if need be to any path

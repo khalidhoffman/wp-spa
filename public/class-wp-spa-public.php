@@ -1,4 +1,6 @@
 <?php
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
 
 /**
  * The public-facing functionality of the plugin.
@@ -49,6 +51,10 @@ class Wp_Spa_Public {
 	 */
 	public function __construct( $plugin_name, $version ) {
 
+
+        $log = new Logger('wp_spa_log');
+        $log->pushHandler(new StreamHandler(dirname(__DIR__ . '/../../') . "/data/dev.log", Logger::INFO));
+        $this->logger = $log;
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 
@@ -126,5 +132,28 @@ class Wp_Spa_Public {
 		$response = $this->get_request_result( $_POST['endpoint'], $_POST['data'], $_POST['method'] );
 		die( 'success' );
 	}
+
+
+	public function on_shutdown(){
+        $final = '';
+
+        // We'll need to get the number of ob levels we're in, so that we can iterate over each, collecting
+        // that buffer's output into the final output.
+        $levels = ob_get_level();
+
+        for ($i = 0; $i < $levels; $i++)
+        {
+            $final .= ob_get_clean();
+        }
+
+        // Apply any filters to the final output
+        echo apply_filters('final_output', $final);
+    }
+
+    public function on_final_output($html){
+        $html = preg_replace('/(<\s*body[^>]*)>/', '$1 ng-controller=\'mainController\'><div ng-view><div class=\'spa-content\'><div class=\'spa-content__content\'>', $html);
+        $html = preg_replace('/(<\s*\/\s*body\s*\>)/', '</div></div></div>$1', $html);
+        return $html;
+    }
 
 }

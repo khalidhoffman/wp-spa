@@ -174,22 +174,21 @@ define([
                 useCache: true,
                 cache: true
             });
-            if (self._cache[route]) {
-                self.$DOM = self._cache[route];
-                console.log('spaContent._cache[%s] = (%O)', route, self.$DOM);
-                _options.done.call(null, null, self.$DOM);
+            if (_options.useCache && self._cache[route]) {
+                var $DOM = self._cache[route].clone();
+                console.log('spaContent._cache[%s] = (%O)', route, $DOM);
+                _options.done.call(null, null, $DOM);
             } else {
                 $http.get(route).then(function success(response) {
                     console.log('spaContent.$http.get.success(%O)', response);
-                    delete self._DOM;
-                    self._DOM = document.createElement('html');
-                    self._DOM.innerHTML = response.data;
-                    self._cache[route] = angular.element(self._DOM);
-                    self.$DOM = self._cache[route];
-                    _options.done.call(null, null, self.$DOM);
+                    var _DOM = document.createElement('html');
+                    _DOM.innerHTML = response.data;
+                    var $DOM= angular.element(_DOM);
+                    if(_options.cache) self._cache[route]  = $DOM;
+                    _options.done.call(null, null, $DOM.clone());
                 }, function failure(response) {
                     var err = new Error('spaContent.http.get("' + route + '") - Failed:' + response);
-                    _options.done.call(null, err, self.$DOM);
+                    _options.done.call(null, err);
                 });
             }
         };

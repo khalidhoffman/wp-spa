@@ -117,6 +117,8 @@ class Wp_Spa {
 
 		$this->load_dependencies();
 		$this->set_locale();
+        ob_start();
+
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 
@@ -194,7 +196,6 @@ class Wp_Spa {
 	private function define_admin_hooks() {
 
 		$plugin_admin = new Wp_Spa_Admin( $this->get_plugin_name(), $this->get_version() );
-
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_settings' );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_options_page' );
 
@@ -214,8 +215,10 @@ class Wp_Spa {
 
 		$plugin_public = new Wp_Spa_Public( $this->get_plugin_name(), $this->get_version() );
 
+        $this->loader->add_filter( 'final_output', $plugin_public,'on_final_output', 0);
 		$this->loader->add_filter( 'template_include', $plugin_public, 'set_current_theme_template', 1000 );
 
+        $this->loader->add_action( 'shutdown', $plugin_public,'on_shutdown', 0);
 		$this->loader->add_action( 'wp_ajax_nopriv_wp_spa', $plugin_public, 'handle_request' );
 		$this->loader->add_action( 'wp_ajax_wp_spa', $plugin_public, 'handle_request' );
 		$this->loader->add_action( 'template_redirect', $plugin_public, 'wp_spa_show_json_sitemap' );

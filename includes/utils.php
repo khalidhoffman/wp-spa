@@ -48,7 +48,9 @@ if(!function_exists('generate_json_config')){
 		$config = array(
 			'siteURL' => get_site_url()
 		);
-		$location = dirname(__DIR__ . '../') . '/data/wp-spa.config.json';
+        $data_dir = dirname(__DIR__ . '../') . '/data/';
+        mkdir($data_dir);
+		$location = $data_dir . 'wp-spa.config.json';
 		$fp = fopen($location, 'w');
 		fwrite($fp, json_encode($config));
 		fclose($fp);

@@ -1,6 +1,6 @@
 {
   "name": "wp-spa",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Converts a WordPress site to a SPA",
   "main": "index.php",
   "scripts": {
@@ -35,6 +35,7 @@
     "diff-dom": "^2.1.0",
     "json-loader": "^0.5.4",
     "lodash": "^4.15.0",
-    "moment": "^2.14.1"
+    "moment": "^2.14.1",
+    "skatejs-dom-diff": "^0.3.1"
   }
 }

@@ -16,7 +16,7 @@ define([
 
         var defaultRouterParams = {
             template : function(){
-                return "<ng-content>"+_$templateProvider.getDefaultContent()+"</ng-content>"
+                return _$templateProvider.getDefaultContent()
             },
             controller : 'mainController'
         };

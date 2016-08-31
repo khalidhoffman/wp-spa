@@ -34,7 +34,7 @@
 /******/ 	__webpack_require__.c = installedModules;
 
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "/br-espresso";
+/******/ 	__webpack_require__.p = "/elclc";
 
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
@@ -54,9 +54,6 @@
 	    console.log('bootstrapping angular');
 	    var $ = __webpack_require__(7);
 	    function init(){
-	        var $body = $('body');
-	        $body.attr('ng-controller', 'mainController');
-	        console.log('bootstrapping angular - %o', $body);
 	        window.angular.bootstrap(document, ['dp-spa']);
 	    }
 	    if(document.readyState === "complete") {
@@ -94,7 +91,7 @@
 
 	        var defaultRouterParams = {
 	            template : function(){
-	                return "<ng-content>"+_$templateProvider.getDefaultContent()+"</ng-content>"
+	                return _$templateProvider.getDefaultContent()
 	            },
 	            controller : 'mainController'
 	        };
@@ -132,11 +129,10 @@
 	            spaState = __webpack_require__(3);
 	            domParser = new DOMParser();
 	        window['WP_Meta'] = __webpack_require__(10);
-	        spaState.set('host', url.parse(window['WP_Meta'].siteURL));
 	        spaState.set('siteURL', window['WP_Meta'].siteURL);
+	        spaState.set('siteURLMeta', url.parse(spaState.get('siteURL')));
 
 
-	        if (!location.origin) location.origin = location.protocol + '//' + location.host;
 	        if (window.getComputedStyle) {
 	            // TODO simplify code
 	            var styles = window.getComputedStyle(document.documentElement, '');
@@ -306,8 +302,7 @@
 	             * @returns {String}
 	             */
 	            getRootPath: function (options) {
-	                var siteURLMeta =  url.parse(WP_Meta['siteURL']);
-	                return siteURLMeta.host;
+	                return spaState.get('siteURLMeta').pathname;
 	            },
 	            /**
 	             *
@@ -316,7 +311,7 @@
 	             * @returns {string} - site's root url
 	             */
 	            getRootUrl: function (options) {
-	                return window.WP_Meta['siteURL'] + ((options && options.trailingSlash === false) ? '' : '/');
+	                return spaState.get('siteURL') + ((options && options.trailingSlash === false) ? '' : '/');
 	            },
 	            /**
 	             *
@@ -324,7 +319,9 @@
 	             * @returns {string}
 	             */
 	            getPathFromUrl: function (requestURL) {
-	                return url.resolve(spaState.get('host').pathname, requestURL);
+	                var domainUrl = utils.getRootUrl({trailingSlash: false}),
+	                    pathStartIndex = requestURL.indexOf(domainUrl) + domainUrl.length;
+	                return requestURL.substr(pathStartIndex);
 	            },
 	            /**
 	             * Sanitizes a path/url aka adds trailing slash if need be to any path
@@ -396,6 +393,9 @@
 	        State = Backbone.Model.extend({
 	            defaults : {
 
+	            },
+	            initialize : function(){
+	                console.log('spaState[%o].initialize()', this);
 	            }
 	        });
 	    return new State();
@@ -19115,7 +19115,7 @@
 /***/ function(module, exports) {
 
 	module.exports = {
-		"siteURL": "http://192.168.1.119/br-espresso"
+		"siteURL": "http://192.168.2.102/elclc"
 	};
 
 /***/ },
@@ -20558,17 +20558,19 @@
 
 	    console.log("require('main-controller')");
 
-	    ngApp.controller('mainController', ['$scope', "contentService", function ($scope, contentService) {
+	    ngApp.controller('mainController', ['$scope', "contentService", "$rootScope", function ($scope, contentService, $rootScope) {
 	        console.log('mainController(%O)', arguments);
 
-	        $scope.$on('$routeChangeStart', function (event, to, from) {
+	        $scope.$on('$routeChangeSuccess', function (event, to, from) {
 	            var route = (to && to.pathParams && to.pathParams.route) ? to.pathParams.route : './';
+	            console.log('mainController.$routeChangeSuccess() - routing to %o', route);
 	            contentService.getHTML(route, {
 	                done : function(err, $DOM){
 	                    if(err){
 	                        console.warn(err);
 	                    } else {
-	                        $scope.$broadcast("view:update", $DOM)
+	                        console.log('mainController.$routeChangeSuccess() - update');
+	                        $rootScope.$broadcast("view:update", $DOM, route)
 	                    }
 	                }
 	            });
@@ -20759,22 +20761,21 @@
 	                useCache: true,
 	                cache: true
 	            });
-	            if (self._cache[route]) {
-	                self.$DOM = self._cache[route];
-	                console.log('spaContent._cache[%s] = (%O)', route, self.$DOM);
-	                _options.done.call(null, null, self.$DOM);
+	            if (_options.useCache && self._cache[route]) {
+	                var $DOM = self._cache[route].clone();
+	                console.log('spaContent._cache[%s] = (%O)', route, $DOM);
+	                _options.done.call(null, null, $DOM);
 	            } else {
 	                $http.get(route).then(function success(response) {
 	                    console.log('spaContent.$http.get.success(%O)', response);
-	                    delete self._DOM;
-	                    self._DOM = document.createElement('html');
-	                    self._DOM.innerHTML = response.data;
-	                    self._cache[route] = angular.element(self._DOM);
-	                    self.$DOM = self._cache[route];
-	                    _options.done.call(null, null, self.$DOM);
+	                    var _DOM = document.createElement('html');
+	                    _DOM.innerHTML = response.data;
+	                    var $DOM= angular.element(_DOM);
+	                    if(_options.cache) self._cache[route]  = $DOM;
+	                    _options.done.call(null, null, $DOM.clone());
 	                }, function failure(response) {
 	                    var err = new Error('spaContent.http.get("' + route + '") - Failed:' + response);
-	                    _options.done.call(null, err, self.$DOM);
+	                    _options.done.call(null, err);
 	                });
 	            }
 	        };
@@ -59035,7 +59036,7 @@
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
 	    __webpack_require__(32),
-	    __webpack_require__(33)
+	    __webpack_require__(64)
 	], __WEBPACK_AMD_DEFINE_RESULT__ = function(){
 
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
@@ -59047,27 +59048,112 @@
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
 	    __webpack_require__,
+	    __webpack_require__(33),
+	    __webpack_require__(5),
+	    __webpack_require__(7),
 	    __webpack_require__(19)
 	], __WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
-	    var ngApp = __webpack_require__(19);
+	    var DiffDOM = __webpack_require__(33),
+	        diffDOM = new DiffDOM(),
+	        skateDomDiff = __webpack_require__(34),
+	        _ = __webpack_require__(5),
+	        $ = __webpack_require__(7),
+	        ngApp = __webpack_require__(19);
 	    return ngApp.directive('head', function () {
 	        return {
 	            restrict: 'AE',
 	            link: function (scope, element, attrs, controller, transcludeFn) {
 	                console.log('head.link(%O)', arguments);
-	                scope.$on('view:update', function (event, $DOM) {
-	                    console.log("head.link().scope.$on('view:update')");
-	                    var $head = $DOM.find('head');
-	                    element.find('meta').remove();
-	                    element.append($head.find('meta'));
-	                    element.find('title').html($head.find('title').html());
-	                });
-	            }
-	            //,
-	            //controller : ['$scope', 'contentService', function($scope, contentService){
-	            //    console.log('head.controller(%O)', arguments);
-	            //    $scope.html = contentService.$DOM.find('head').html() || '<h1>Initializing...</h1>';
-	            //}]
+	            },
+	            controller: ['$scope', '$element', function ($scope, $element) {
+	                console.log('head.controller(%O)', arguments);
+	                var styleSelector = "link[rel='stylesheet']";
+	                $scope.cache = {
+	                    styles: []
+	                };
+
+	                $scope.format = function($el){
+	                    console.log('ngHead() - formatting styles');
+	                    var $head = $el || $element,
+	                        $styles = $head.find(styleSelector);
+	                    $styles.appendTo($head);
+	                };
+
+	                function init(){
+	                    $scope.format();
+
+	                    $scope.$on('view:update', function (event, $DOM, route) {
+	                        console.log("head.link()$scope.$on('view:update')");
+	                        var styles = [],
+	                            $head = $DOM.find('head'),
+	                            $styles = $head.find(styleSelector),
+	                            $liveHead = $element,
+	                            $liveStyles = $element.find(styleSelector).clone(),
+	                            scripts = [],
+	                            $scripts = $liveHead.find('script');
+	                        // console.log('ngHead() - removing styles %o from incoming DOM.head', $styles);
+	                        // $styles.each(function (styleEl, index) {
+	                        //     var $style = $(styleEl);
+	                        //     $style.remove();
+	                        //     styles.push({
+	                        //         $style: $style
+	                        //     })
+	                        // });
+	                        
+	                        // add new styles to incoming head
+	                        $scope.format($head);
+	                        $head.append($liveStyles.not(function(index, el){
+	                            return _.includes($scope.cache.styles, el.href);
+	                        }));
+
+	                        // keep record of added styles
+	                        $liveStyles.each(function(index, el){
+	                            $scope.cache.styles.push(el.href);
+	                        });
+
+
+	                        var liveHeadClone = document.createDocumentFragment();
+	                        var incomingHeadClone = document.createDocumentFragment();
+
+	                        liveHeadClone.appendChild($liveHead.clone()[0]);
+	                        incomingHeadClone.appendChild($head[0]);
+
+	                        console.log('ngHead - liveHeadClone.before: %o', liveHeadClone);
+	                        var instructions = skateDomDiff.diff({
+	                            // The fragment that you want the source to look like.
+	                            destination: incomingHeadClone,
+
+	                            // The fragment that you want to make look like the destination.
+	                            source: liveHeadClone
+	                        });
+	                        skateDomDiff.patch(instructions);
+	                        var $result = $(liveHeadClone).find('head');
+	                        console.log('ngHead - liveHeadClone.after: %o', liveHeadClone);
+	                        console.log('ngHead - $liveHeadClone.after: %o', $result);
+
+
+
+	                        var diffs = diffDOM.diff($liveHead[0], $result[0]);
+	                        console.log("ngHead() - ngHead.view:update - diffDOM = %O", diffs);
+	                        diffDOM.apply($liveHead[0], diffs);
+
+
+	                        // apply styles from new DOM.head
+	                        // console.log('ngHead() - apply styles from incoming DOM.head');
+	                        // _.forEach(styles, function (styleData, index) {
+	                        //     styleData.$style.appendTo($liveHead);
+	                        // });
+
+
+	                        // $element.find('meta').remove();
+	                        // $element.append($head.find('meta'));
+	                        // $element.find('title').html($head.find('title').html());
+	                        $scope.$broadcast('head:update', $DOM, route)
+	                    });
+
+	                }
+	                init();
+	            }]
 	        };
 	    });
 
@@ -59076,86 +59162,6 @@
 
 /***/ },
 /* 33 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	    __webpack_require__,
-	    __webpack_require__(5),
-	    __webpack_require__(18),
-	    __webpack_require__(34),
-	    __webpack_require__(19)
-	], __WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
-	    var _ = __webpack_require__(5),
-	        DiffDOM = __webpack_require__(34),
-	        diffDOM = new DiffDOM(),
-	        ngApp = __webpack_require__(19);
-	    console.log("require('modules/directives/body')");
-	    return ngApp.directive('body', function () {
-	        return {
-	            restrict: 'AE',
-	            controller : ['$scope', '$element', '$location', 'contentService', function($scope, $element, $location,contentService){
-	                console.log('ngBody.controller.initialize()');
-
-	                interceptAction = function(evt){
-	                    var href = evt.currentTarget.href;
-	                    if(contentService.wordpress.hasPageSync(href) || contentService.wordpress.hasPostSync(href)){
-	                        evt.preventDefault();
-	                        $location.url(href);
-	                    }
-	                };
-
-	                $scope.destroyClickables = function(){
-	                    if($scope.clickables) $scope.clickables.off('click', null, interceptAction);
-	                    delete $scope.clickables;
-	                };
-
-	                $scope.createClickables = function(){
-	                    console.log('setting clickables');
-	                    $scope.clickables = $element.find('[href]');
-	                    if($scope.interceptAction) $scope.clickables.on('click', interceptAction);
-	                };
-
-	                $scope.sanitize = function(){
-	                    $scope.clickables.each(function(index, el){
-	                        this.setAttribute('ng-href', this.href);
-	                    });
-	                };
-
-	                $scope.createClickables();
-
-
-	                $scope.$on('view:update', function (event, $DOM) {
-	                    $scope.destroyClickables();
-	                    console.log("body.controller.$scope.$on('view:update')");
-	                    // var $body = $DOM.find('body');
-	                    var $body = $DOM.find('body'),
-	                        diffs = diffDOM.diff($element[0],  $body[0]);
-	                    console.log("body.diffDOM = %O", diffs);
-	                    diffDOM.apply($element[0], diffs);
-	                    var $ngView = $element.find('[ng-view]');
-	                    console.log('sanitizing ngView: %o', $ngView);
-	                    $ngView.removeAttr('ng-cloak');
-
-	                    _.forEach($body[0].attributes, function(attr, index){
-	                        $element.attr(attr.name, attr.value);
-	                    });
-
-	                    $scope.createClickables();
-	                    $scope.sanitize();
-	                });
-
-	            }],
-	            link: function (scope, element, attrs, controller, transcludeFn) {
-	                console.log('body.link(%O)', arguments);
-	            }
-	        };
-	    });
-
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-
-
-/***/ },
-/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function() {
@@ -60514,6 +60520,1873 @@
 	    }
 
 	}.call(this));
+
+
+/***/ },
+/* 34 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(35), __webpack_require__(48), __webpack_require__(49), __webpack_require__(58), __webpack_require__(36), __webpack_require__(62), __webpack_require__(63)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./diff'), require('./merge'), require('./patch'), require('./render'), require('./types'), require('./vdom'), require('./version'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.diff, global.merge, global.patch, global.render, global.types, global.vdom, global.version);
+	    global.index = mod.exports;
+	  }
+	})(this, function (module, exports, _diff, _merge, _patch, _render, _types, _vdom, _version) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  var _diff2 = _interopRequireDefault(_diff);
+
+	  var _merge2 = _interopRequireDefault(_merge);
+
+	  var _patch2 = _interopRequireDefault(_patch);
+
+	  var _render2 = _interopRequireDefault(_render);
+
+	  var types = _interopRequireWildcard(_types);
+
+	  var _vdom2 = _interopRequireDefault(_vdom);
+
+	  var _version2 = _interopRequireDefault(_version);
+
+	  function _interopRequireWildcard(obj) {
+	    if (obj && obj.__esModule) {
+	      return obj;
+	    } else {
+	      var newObj = {};
+
+	      if (obj != null) {
+	        for (var key in obj) {
+	          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+	        }
+	      }
+
+	      newObj.default = obj;
+	      return newObj;
+	    }
+	  }
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  exports.default = {
+	    diff: _diff2.default,
+	    merge: _merge2.default,
+	    patch: _patch2.default,
+	    render: _render2.default,
+	    types: types,
+	    vdom: _vdom2.default,
+	    version: _version2.default
+	  };
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 35 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(36), __webpack_require__(37), __webpack_require__(46), __webpack_require__(47)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./types'), require('./compare/node'), require('./util/real-node'), require('./util/real-node-map'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.types, global.node, global.realNode, global.realNodeMap);
+	    global.diff = mod.exports;
+	  }
+	})(this, function (module, exports, _types, _node, _realNode, _realNodeMap) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  exports.default = diff;
+
+	  var types = _interopRequireWildcard(_types);
+
+	  var _node2 = _interopRequireDefault(_node);
+
+	  var _realNode2 = _interopRequireDefault(_realNode);
+
+	  var _realNodeMap2 = _interopRequireDefault(_realNodeMap);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  function _interopRequireWildcard(obj) {
+	    if (obj && obj.__esModule) {
+	      return obj;
+	    } else {
+	      var newObj = {};
+
+	      if (obj != null) {
+	        for (var key in obj) {
+	          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+	        }
+	      }
+
+	      newObj.default = obj;
+	      return newObj;
+	    }
+	  }
+
+	  function diff() {
+	    var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	    var src = opts.source;
+	    var dst = opts.destination;
+	    var instructions = [];
+
+	    if (!src || !dst) {
+	      return [];
+	    }
+
+	    var srcChs = src.childNodes;
+	    var dstChs = dst.childNodes;
+	    var srcChsLen = srcChs ? srcChs.length : 0;
+	    var dstChsLen = dstChs ? dstChs.length : 0;
+
+	    for (var a = 0; a < dstChsLen; a++) {
+	      var curSrc = srcChs[a];
+	      var curDst = dstChs[a];
+
+	      if (!curSrc) {
+	        instructions.push({
+	          destination: dstChs[a],
+	          source: src,
+	          type: types.APPEND_CHILD
+	        });
+	        continue;
+	      } else {
+	        if (!(curDst instanceof Node)) {
+	          _realNodeMap2.default.set(curDst, (0, _realNode2.default)(curSrc));
+	        }
+	      }
+
+	      var nodeInstructions = (0, _node2.default)(curSrc, curDst);
+
+	      if (nodeInstructions) {
+	        var newOpts = opts;
+	        newOpts.destination = curDst;
+	        newOpts.source = curSrc;
+	        instructions = instructions.concat(nodeInstructions, diff(newOpts));
+	      } else {
+	        instructions.push({
+	          destination: curDst,
+	          source: curSrc,
+	          type: types.REPLACE_CHILD
+	        });
+	      }
+	    }
+
+	    if (dstChsLen < srcChsLen) {
+	      for (var a = dstChsLen; a < srcChsLen; a++) {
+	        instructions.push({
+	          destination: srcChs[a],
+	          source: src,
+	          type: types.REMOVE_CHILD
+	        });
+	      }
+	    }
+
+	    return instructions;
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 36 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(exports);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod.exports);
+	    global.types = mod.exports;
+	  }
+	})(this, function (exports) {
+	  "use strict";
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  var APPEND_CHILD = exports.APPEND_CHILD = 1;
+	  var REMOVE_CHILD = exports.REMOVE_CHILD = 2;
+	  var REMOVE_ATTRIBUTE = exports.REMOVE_ATTRIBUTE = 3;
+	  var REPLACE_CHILD = exports.REPLACE_CHILD = 4;
+	  var SET_ATTRIBUTE = exports.SET_ATTRIBUTE = 5;
+	  var SET_EVENT = exports.SET_EVENT = 6;
+	  var SET_PROPERTY = exports.SET_PROPERTY = 7;
+	  var TEXT_CONTENT = exports.TEXT_CONTENT = 8;
+	});
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(38), __webpack_require__(44), __webpack_require__(45)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./element'), require('./text'), require('./comment'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.element, global.text, global.comment);
+	    global.node = mod.exports;
+	  }
+	})(this, function (module, exports, _element, _text, _comment) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst) {
+	    var dstType = undefined,
+	        srcType = undefined;
+
+	    if (!dst || !src) {
+	      return;
+	    }
+
+	    dstType = dst.nodeType;
+	    srcType = src.nodeType;
+
+	    if (dstType !== srcType) {
+	      return;
+	    } else if (dstType === NODE_ELEMENT) {
+	      return (0, _element2.default)(src, dst);
+	    } else if (dstType === NODE_TEXT) {
+	      return (0, _text2.default)(src, dst);
+	    } else if (dstType === NODE_COMMENT) {
+	      return (0, _comment2.default)(src, dst);
+	    }
+	  };
+
+	  var _element2 = _interopRequireDefault(_element);
+
+	  var _text2 = _interopRequireDefault(_text);
+
+	  var _comment2 = _interopRequireDefault(_comment);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  var NODE_COMMENT = 8;
+	  var NODE_ELEMENT = 1;
+	  var NODE_TEXT = 3;
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 38 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(39), __webpack_require__(41)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./attributes'), require('./events'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.attributes, global.events);
+	    global.element = mod.exports;
+	  }
+	})(this, function (module, exports, _attributes, _events) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst) {
+	    if (src.tagName === dst.tagName) {
+	      return (0, _attributes2.default)(src, dst).concat((0, _events2.default)(src, dst));
+	    }
+	  };
+
+	  var _attributes2 = _interopRequireDefault(_attributes);
+
+	  var _events2 = _interopRequireDefault(_events);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 39 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(36), __webpack_require__(40)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../types'), require('../util/accessor'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.types, global.accessor);
+	    global.attributes = mod.exports;
+	  }
+	})(this, function (module, exports, _types, _accessor) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst) {
+	    var srcAttrs = src.attributes;
+	    var dstAttrs = dst.attributes;
+	    var srcAttrsLen = (srcAttrs || 0) && srcAttrs.length;
+	    var dstAttrsLen = (dstAttrs || 0) && dstAttrs.length;
+	    var instructions = [];
+
+	    // Bail early if possible.
+	    if (!srcAttrsLen && !dstAttrsLen) {
+	      return instructions;
+	    }
+
+	    // Merge attributes that exist in source with destination's.
+	    for (var a = 0; a < srcAttrsLen; a++) {
+	      var srcAttr = srcAttrs[a];
+	      var srcAttrName = srcAttr.name;
+	      var srcAttrValue = (0, _accessor.getAccessor)(src, srcAttrName);
+	      var dstAttr = dstAttrs[srcAttrName];
+	      var dstAttrValue = (0, _accessor.getAccessor)(dst, srcAttrName);
+
+	      if (!dstAttr) {
+	        instructions.push({
+	          data: { name: srcAttrName },
+	          destination: dst,
+	          source: src,
+	          type: types.REMOVE_ATTRIBUTE
+	        });
+	      } else if (srcAttrValue !== dstAttrValue) {
+	        instructions.push({
+	          data: { name: srcAttrName, value: dstAttrValue },
+	          destination: dst,
+	          source: src,
+	          type: types.SET_ATTRIBUTE
+	        });
+	      }
+	    }
+
+	    // We only need to worry about setting attributes that don't already exist
+	    // in the source.
+	    for (var a = 0; a < dstAttrsLen; a++) {
+	      var dstAttr = dstAttrs[a];
+	      var dstAttrName = dstAttr.name;
+	      var dstAttrValue = (0, _accessor.getAccessor)(dst, dstAttrName);
+	      var srcAttr = srcAttrs[dstAttrName];
+
+	      if (!srcAttr) {
+	        instructions.push({
+	          data: { name: dstAttrName, value: dstAttrValue },
+	          destination: dst,
+	          source: src,
+	          type: types.SET_ATTRIBUTE
+	        });
+	      }
+	    }
+
+	    return instructions;
+	  };
+
+	  var types = _interopRequireWildcard(_types);
+
+	  function _interopRequireWildcard(obj) {
+	    if (obj && obj.__esModule) {
+	      return obj;
+	    } else {
+	      var newObj = {};
+
+	      if (obj != null) {
+	        for (var key in obj) {
+	          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+	        }
+	      }
+
+	      newObj.default = obj;
+	      return newObj;
+	    }
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(exports);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod.exports);
+	    global.accessor = mod.exports;
+	  }
+	})(this, function (exports) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  exports.getAccessor = getAccessor;
+	  exports.mapAccessor = mapAccessor;
+	  exports.removeAccessor = removeAccessor;
+	  exports.setAccessor = setAccessor;
+
+	  function classToString(obj) {
+	    if (typeof obj === 'string') {
+	      return obj;
+	    }
+
+	    if (Array.isArray(obj)) {
+	      return obj.join(' ');
+	    }
+
+	    return Object.keys(obj).filter(function (key) {
+	      return obj[key] ? key : false;
+	    }).join(' ');
+	  }
+
+	  function styleToString(obj) {
+	    if (typeof obj === 'string') {
+	      return obj;
+	    }
+
+	    return Object.keys(obj).map(function (key) {
+	      return key + ': ' + obj[key] + ';';
+	    }).join(' ');
+	  }
+
+	  function getAccessor(node, name) {
+	    if (name === 'class') {
+	      return node.className;
+	    } else if (name === 'style') {
+	      return node.style.cssText;
+	    } else if (name !== 'type' && name in node) {
+	      return node[name];
+	    } else if (node.getAttribute) {
+	      return node.getAttribute(name);
+	    } else if (node.attributes && node.attributes[name]) {
+	      return node.attributes[name].value;
+	    }
+	  }
+
+	  function mapAccessor(node, name, value) {
+	    if (name === 'class') {
+	      node.className = classToString(value);
+	    } else if (name === 'style') {
+	      node.style = {
+	        cssText: styleToString(value)
+	      };
+	    }
+	  }
+
+	  function removeAccessor(node, name) {
+	    if (name === 'class') {
+	      node.className = '';
+	    } else if (name === 'style') {
+	      node.style.cssText = '';
+	    } else if (name !== 'type' && name in node) {
+	      node[name] = '';
+	    } else if (node.removeAttribute) {
+	      node.removeAttribute(name);
+	    } else if (node.attributes) {
+	      delete node.attributes[name];
+	    }
+	  }
+
+	  function setAccessor(node, name, value) {
+	    if (name === 'class') {
+	      node.className = value;
+	    } else if (name === 'style') {
+	      node.style.cssText = value;
+	    } else if (name !== 'type' && name in node || typeof value !== 'string') {
+	      node[name] = value == null ? '' : value;
+	    } else if (node.setAttribute) {
+	      node.setAttribute(name, value);
+	    } else if (node.attributes) {
+	      node.attributes[node.attributes.length] = node.attributes[name] = {
+	        name: name,
+	        value: value
+	      };
+	    }
+	  }
+	});
+
+/***/ },
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(36), __webpack_require__(42)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../types'), require('../util/event-map'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.types, global.eventMap);
+	    global.events = mod.exports;
+	  }
+	})(this, function (module, exports, _types, _eventMap) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst) {
+	    var dstEvents = dst.events;
+	    var srcEvents = (0, _eventMap2.default)(src);
+	    var instructions = [];
+
+	    // Remove any source events that aren't in the source before seeing if we
+	    // need to add any from the destination.
+	    if (srcEvents) {
+	      for (var name in srcEvents) {
+	        if (dstEvents[name] !== srcEvents[name]) {
+	          instructions.push({
+	            data: { name: name, value: undefined },
+	            destination: dst,
+	            source: src,
+	            type: types.SET_EVENT
+	          });
+	        }
+	      }
+	    }
+
+	    // After instructing to remove any old events, we then can instruct to add
+	    // new events. This prevents the new events from being removed from earlier
+	    // instructions.
+	    if (dstEvents) {
+	      for (var name in dstEvents) {
+	        var value = dstEvents[name];
+	        if (srcEvents[name] !== value) {
+	          instructions.push({
+	            data: { name: name, value: value },
+	            destination: dst,
+	            source: src,
+	            type: types.SET_EVENT
+	          });
+	        }
+	      }
+	    }
+
+	    return instructions;
+	  };
+
+	  var types = _interopRequireWildcard(_types);
+
+	  var _eventMap2 = _interopRequireDefault(_eventMap);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  function _interopRequireWildcard(obj) {
+	    if (obj && obj.__esModule) {
+	      return obj;
+	    } else {
+	      var newObj = {};
+
+	      if (obj != null) {
+	        for (var key in obj) {
+	          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+	        }
+	      }
+
+	      newObj.default = obj;
+	      return newObj;
+	    }
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 42 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(43)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./weak-map'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.weakMap);
+	    global.eventMap = mod.exports;
+	  }
+	})(this, function (module, exports, _weakMap) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (elem) {
+	    var events = map.get(elem);
+	    events || map.set(elem, events = {});
+	    return events;
+	  };
+
+	  var _weakMap2 = _interopRequireDefault(_weakMap);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  var map = new _weakMap2.default();
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 43 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports);
+	    global.weakMap = mod.exports;
+	  }
+	})(this, function (module, exports) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  var index = 0;
+	  var prefix = '__WEAK_MAP_POLYFILL_';
+
+	  exports.default = function () {
+	    if (typeof WeakMap !== 'undefined') {
+	      return WeakMap;
+	    }
+
+	    function Polyfill() {
+	      this.key = prefix + index;
+	      ++index;
+	    }
+
+	    Polyfill.prototype = {
+	      get: function get(obj) {
+	        return obj[this.key];
+	      },
+	      set: function set(obj, val) {
+	        obj[this.key] = val;
+	      }
+	    };
+
+	    return Polyfill;
+	  }();
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 44 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(36)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../types'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.types);
+	    global.text = mod.exports;
+	  }
+	})(this, function (module, exports, _types) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst) {
+	    if (src.textContent === dst.textContent) {
+	      return [];
+	    }
+
+	    return [{
+	      destination: dst,
+	      source: src,
+	      type: types.TEXT_CONTENT
+	    }];
+	  };
+
+	  var types = _interopRequireWildcard(_types);
+
+	  function _interopRequireWildcard(obj) {
+	    if (obj && obj.__esModule) {
+	      return obj;
+	    } else {
+	      var newObj = {};
+
+	      if (obj != null) {
+	        for (var key in obj) {
+	          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+	        }
+	      }
+
+	      newObj.default = obj;
+	      return newObj;
+	    }
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 45 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(44)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./text'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.text);
+	    global.comment = mod.exports;
+	  }
+	})(this, function (module, exports, _text) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  var _text2 = _interopRequireDefault(_text);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  exports.default = _text2.default;
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 46 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(47)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./real-node-map'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.realNodeMap);
+	    global.realNode = mod.exports;
+	  }
+	})(this, function (module, exports, _realNodeMap) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (node) {
+	    return node instanceof Node ? node : _realNodeMap2.default.get(node);
+	  };
+
+	  var _realNodeMap2 = _interopRequireDefault(_realNodeMap);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  var _window = window;
+	  var Node = _window.Node;
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 47 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(43)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./weak-map'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.weakMap);
+	    global.realNodeMap = mod.exports;
+	  }
+	})(this, function (module, exports, _weakMap) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  var _weakMap2 = _interopRequireDefault(_weakMap);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  exports.default = new _weakMap2.default();
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 48 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(35), __webpack_require__(49)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./diff'), require('./patch'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.diff, global.patch);
+	    global.merge = mod.exports;
+	  }
+	})(this, function (module, exports, _diff, _patch) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (opts) {
+	    var inst = (0, _diff2.default)(opts);
+	    (0, _patch2.default)(inst);
+	    return inst;
+	  };
+
+	  var _diff2 = _interopRequireDefault(_diff);
+
+	  var _patch2 = _interopRequireDefault(_patch);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 49 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(36), __webpack_require__(50), __webpack_require__(52), __webpack_require__(57), __webpack_require__(53), __webpack_require__(54), __webpack_require__(55), __webpack_require__(56)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./types'), require('./patch/append-child'), require('./patch/remove-attribute'), require('./patch/remove-child'), require('./patch/replace-child'), require('./patch/set-attribute'), require('./patch/set-event'), require('./patch/text-content'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.types, global.appendChild, global.removeAttribute, global.removeChild, global.replaceChild, global.setAttribute, global.setEvent, global.textContent);
+	    global.patch = mod.exports;
+	  }
+	})(this, function (module, exports, _types, _appendChild, _removeAttribute, _removeChild, _replaceChild, _setAttribute, _setEvent, _textContent) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (instructions) {
+	    instructions.forEach(patch);
+	  };
+
+	  var types = _interopRequireWildcard(_types);
+
+	  var _appendChild2 = _interopRequireDefault(_appendChild);
+
+	  var _removeAttribute2 = _interopRequireDefault(_removeAttribute);
+
+	  var _removeChild2 = _interopRequireDefault(_removeChild);
+
+	  var _replaceChild2 = _interopRequireDefault(_replaceChild);
+
+	  var _setAttribute2 = _interopRequireDefault(_setAttribute);
+
+	  var _setEvent2 = _interopRequireDefault(_setEvent);
+
+	  var _textContent2 = _interopRequireDefault(_textContent);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  function _interopRequireWildcard(obj) {
+	    if (obj && obj.__esModule) {
+	      return obj;
+	    } else {
+	      var newObj = {};
+
+	      if (obj != null) {
+	        for (var key in obj) {
+	          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+	        }
+	      }
+
+	      newObj.default = obj;
+	      return newObj;
+	    }
+	  }
+
+	  var patchers = {};
+	  patchers[types.APPEND_CHILD] = _appendChild2.default;
+	  patchers[types.REMOVE_ATTRIBUTE] = _removeAttribute2.default;
+	  patchers[types.REMOVE_CHILD] = _removeChild2.default;
+	  patchers[types.REPLACE_CHILD] = _replaceChild2.default;
+	  patchers[types.SET_ATTRIBUTE] = _setAttribute2.default;
+	  patchers[types.SET_EVENT] = _setEvent2.default;
+	  patchers[types.TEXT_CONTENT] = _textContent2.default;
+
+	  function patch(instruction) {
+	    patchers[instruction.type](instruction.source, instruction.destination, instruction.data);
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 50 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(46), __webpack_require__(51)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../util/real-node'), require('../vdom/dom'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.realNode, global.dom);
+	    global.appendChild = mod.exports;
+	  }
+	})(this, function (module, exports, _realNode, _dom) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst) {
+	    (0, _realNode2.default)(src).appendChild((0, _dom2.default)(dst));
+	  };
+
+	  var _realNode2 = _interopRequireDefault(_realNode);
+
+	  var _dom2 = _interopRequireDefault(_dom);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 51 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(40), __webpack_require__(42), __webpack_require__(47)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../util/accessor'), require('../util/event-map'), require('../util/real-node-map'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.accessor, global.eventMap, global.realNodeMap);
+	    global.dom = mod.exports;
+	  }
+	})(this, function (module, exports, _accessor, _eventMap, _realNodeMap) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  exports.default = render;
+
+	  var _eventMap2 = _interopRequireDefault(_eventMap);
+
+	  var _realNodeMap2 = _interopRequireDefault(_realNodeMap);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+	    return typeof obj;
+	  } : function (obj) {
+	    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+	  };
+
+	  function createElement(el) {
+	    var realNode = document.createElement(el.tagName);
+	    var attributes = el.attributes;
+	    var events = el.events;
+	    var eventHandlers = (0, _eventMap2.default)(realNode);
+	    var children = el.childNodes;
+
+	    if (attributes) {
+	      var attributesLen = attributes.length;
+
+	      for (var a = 0; a < attributesLen; a++) {
+	        var attr = attributes[a];
+	        (0, _accessor.setAccessor)(realNode, attr.name, attr.value);
+	      }
+	    }
+
+	    if (events) {
+	      for (var name in events) {
+	        realNode.addEventListener(name, eventHandlers[name] = events[name]);
+	      }
+	    }
+
+	    if (children) {
+	      var docfrag = document.createDocumentFragment();
+	      var childrenLen = children.length;
+
+	      for (var a = 0; a < childrenLen; a++) {
+	        var ch = children[a];
+	        ch && docfrag.appendChild(render(ch));
+	      }
+
+	      if (realNode.appendChild) {
+	        realNode.appendChild(docfrag);
+	      }
+	    }
+
+	    return realNode;
+	  }
+
+	  function createText(el) {
+	    return document.createTextNode(el.textContent);
+	  }
+
+	  function render(el) {
+	    if (el instanceof Node) {
+	      return el;
+	    }
+
+	    if (Array.isArray(el)) {
+	      var _ret = function () {
+	        var frag = document.createDocumentFragment();
+	        el.forEach(function (item) {
+	          return frag.appendChild(render(item));
+	        });
+	        return {
+	          v: frag
+	        };
+	      }();
+
+	      if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+	    }
+
+	    var realNode = el.tagName ? createElement(el) : createText(el);
+
+	    _realNodeMap2.default.set(el, realNode);
+
+	    return realNode;
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 52 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(40), __webpack_require__(46)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../util/accessor'), require('../util/real-node'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.accessor, global.realNode);
+	    global.removeAttribute = mod.exports;
+	  }
+	})(this, function (module, exports, _accessor, _realNode) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst, data) {
+	    (0, _accessor.removeAccessor)((0, _realNode2.default)(src), data.name);
+	  };
+
+	  var _realNode2 = _interopRequireDefault(_realNode);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 53 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(51), __webpack_require__(46)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../vdom/dom'), require('../util/real-node'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.dom, global.realNode);
+	    global.replaceChild = mod.exports;
+	  }
+	})(this, function (module, exports, _dom, _realNode) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst) {
+	    var realSrc = (0, _realNode2.default)(src);
+	    realSrc && realSrc.parentNode && realSrc.parentNode.replaceChild((0, _dom2.default)(dst), realSrc);
+	  };
+
+	  var _dom2 = _interopRequireDefault(_dom);
+
+	  var _realNode2 = _interopRequireDefault(_realNode);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 54 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(40), __webpack_require__(46)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../util/accessor'), require('../util/real-node'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.accessor, global.realNode);
+	    global.setAttribute = mod.exports;
+	  }
+	})(this, function (module, exports, _accessor, _realNode) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst, data) {
+	    (0, _accessor.setAccessor)((0, _realNode2.default)(src), data.name, data.value);
+	  };
+
+	  var _realNode2 = _interopRequireDefault(_realNode);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 55 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(42), __webpack_require__(46)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../util/event-map'), require('../util/real-node'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.eventMap, global.realNode);
+	    global.setEvent = mod.exports;
+	  }
+	})(this, function (module, exports, _eventMap, _realNode) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst, data) {
+	    var realSrc = (0, _realNode2.default)(src);
+	    var eventHandlers = (0, _eventMap2.default)(realSrc);
+	    var name = data.name;
+	    var prevHandler = eventHandlers[name];
+	    var nextHandler = data.value;
+
+	    if (typeof prevHandler === 'function') {
+	      delete eventHandlers[name];
+	      realSrc.removeEventListener(name, prevHandler);
+	    }
+
+	    if (typeof nextHandler === 'function') {
+	      eventHandlers[name] = nextHandler;
+	      realSrc.addEventListener(name, nextHandler);
+	    }
+	  };
+
+	  var _eventMap2 = _interopRequireDefault(_eventMap);
+
+	  var _realNode2 = _interopRequireDefault(_realNode);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 56 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(46)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../util/real-node'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.realNode);
+	    global.textContent = mod.exports;
+	  }
+	})(this, function (module, exports, _realNode) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst) {
+	    (0, _realNode2.default)(src).textContent = dst.textContent;
+	  };
+
+	  var _realNode2 = _interopRequireDefault(_realNode);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 57 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(46)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../util/real-node'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.realNode);
+	    global.removeChild = mod.exports;
+	  }
+	})(this, function (module, exports, _realNode) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (src, dst) {
+	    var realDst = (0, _realNode2.default)(dst);
+	    realDst.parentNode.removeChild(realDst);
+	  };
+
+	  var _realNode2 = _interopRequireDefault(_realNode);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 58 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(43), __webpack_require__(59), __webpack_require__(48), __webpack_require__(61)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./util/weak-map'), require('./vdom/element'), require('./merge'), require('./vdom/mount'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.weakMap, global.element, global.merge, global.mount);
+	    global.render = mod.exports;
+	  }
+	})(this, function (module, exports, _weakMap, _element, _merge, _mount) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (render) {
+	    return function (elem) {
+	      elem = elem instanceof Node ? elem : this;
+
+	      if (!elem instanceof Node) {
+	        throw new Error('No node provided to diff renderer as either the first argument or the context.');
+	      }
+
+	      // Create a new element to house the new tree since we diff / mount fragments.
+	      var newTree = (0, _element2.default)('div', null, render(elem));
+	      var oldTree = oldTreeMap.get(elem);
+
+	      if (oldTree) {
+	        (0, _merge2.default)({
+	          destination: newTree,
+	          source: oldTree
+	        });
+	      } else {
+	        (0, _mount2.default)(elem, newTree.childNodes);
+	      }
+
+	      oldTreeMap.set(elem, newTree);
+	    };
+	  };
+
+	  var _weakMap2 = _interopRequireDefault(_weakMap);
+
+	  var _element2 = _interopRequireDefault(_element);
+
+	  var _merge2 = _interopRequireDefault(_merge);
+
+	  var _mount2 = _interopRequireDefault(_mount);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  var _window = window;
+	  var Node = _window.Node;
+	  var oldTreeMap = new _weakMap2.default();
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 59 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(40), __webpack_require__(60)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('../util/accessor'), require('./text'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.accessor, global.text);
+	    global.element = mod.exports;
+	  }
+	})(this, function (module, exports, _accessor, _text) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  exports.default = element;
+
+	  var _text2 = _interopRequireDefault(_text);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+	    return typeof obj;
+	  } : function (obj) {
+	    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+	  };
+
+	  function separateData(obj) {
+	    var attrs = {};
+	    var events = {};
+	    var node = {};
+	    var attrIdx = 0;
+
+	    for (var name in obj) {
+	      var value = obj[name];
+
+	      if (name.indexOf('on') === 0) {
+	        events[name.substring(2)] = value;
+	      } else {
+	        attrs[attrIdx++] = attrs[name] = {
+	          name: name,
+	          value: value
+	        };
+	        (0, _accessor.mapAccessor)(node, name, value);
+	      }
+	    }
+
+	    attrs.length = attrIdx;
+	    return {
+	      attrs: attrs,
+	      events: events,
+	      node: node
+	    };
+	  }
+
+	  function ensureNodes(arr) {
+	    var out = [];
+	    arr.filter(Boolean).forEach(function (item) {
+	      if (Array.isArray(item)) {
+	        out = out.concat(ensureNodes(item));
+	      } else if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) === 'object') {
+	        out.push(item);
+	      } else {
+	        out.push((0, _text2.default)(item));
+	      }
+	    });
+	    return out;
+	  }
+
+	  function ensureTagName(name) {
+	    return (typeof name === 'function' ? name.id || name.name : name).toUpperCase();
+	  }
+
+	  function isChildren(arg) {
+	    return arg && (typeof arg === 'string' || Array.isArray(arg) || typeof arg.nodeType === 'number');
+	  }
+
+	  function element(name) {
+	    var attrs = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	    var isAttrsNode = isChildren(attrs);
+	    var data = separateData(isAttrsNode ? {} : attrs);
+	    var node = data.node;
+	    node.nodeType = 1;
+	    node.tagName = ensureTagName(name);
+	    node.attributes = data.attrs;
+	    node.events = data.events;
+
+	    for (var _len = arguments.length, chren = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+	      chren[_key - 2] = arguments[_key];
+	    }
+
+	    node.childNodes = ensureNodes(isAttrsNode ? [attrs].concat(chren) : chren);
+	    return node;
+	  }
+
+	  ['a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'bgsound', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'command', 'content', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'element', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'image', 'img', 'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meta', 'meter', 'multicol', 'nav', 'nobr', 'noembed', 'noframes', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'shadow', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr'].forEach(function (tag) {
+	    element[tag] = element.bind(null, tag);
+	  });
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 60 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports);
+	    global.text = mod.exports;
+	  }
+	})(this, function (module, exports) {
+	  "use strict";
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  exports.default = createTextNode;
+
+	  function createTextNode(item) {
+	    return {
+	      nodeType: 3,
+	      textContent: item
+	    };
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 61 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(51)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./dom'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.dom);
+	    global.mount = mod.exports;
+	  }
+	})(this, function (module, exports, _dom) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  exports.default = function (elem, tree) {
+	    removeChildNodes(elem);
+	    elem.appendChild((0, _dom2.default)(tree));
+	  };
+
+	  var _dom2 = _interopRequireDefault(_dom);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  function removeChildNodes(elem) {
+	    while (elem.firstChild) {
+	      var first = elem.firstChild;
+	      first.parentNode.removeChild(first);
+	    }
+	  }
+
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 62 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports, __webpack_require__(51), __webpack_require__(59), __webpack_require__(61), __webpack_require__(60)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports, require('./dom'), require('./element'), require('./mount'), require('./text'));
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports, global.dom, global.element, global.mount, global.text);
+	    global.index = mod.exports;
+	  }
+	})(this, function (module, exports, _dom, _element, _mount, _text) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+
+	  var _dom2 = _interopRequireDefault(_dom);
+
+	  var _element2 = _interopRequireDefault(_element);
+
+	  var _mount2 = _interopRequireDefault(_mount);
+
+	  var _text2 = _interopRequireDefault(_text);
+
+	  function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : {
+	      default: obj
+	    };
+	  }
+
+	  exports.default = {
+	    dom: _dom2.default,
+	    element: _element2.default,
+	    mount: _mount2.default,
+	    text: _text2.default
+	  };
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 63 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module, exports], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof exports !== "undefined") {
+	    factory(module, exports);
+	  } else {
+	    var mod = {
+	      exports: {}
+	    };
+	    factory(mod, mod.exports);
+	    global.version = mod.exports;
+	  }
+	})(this, function (module, exports) {
+	  'use strict';
+
+	  Object.defineProperty(exports, "__esModule", {
+	    value: true
+	  });
+	  exports.default = '0.3.1';
+	  module.exports = exports['default'];
+	});
+
+/***/ },
+/* 64 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [
+	    __webpack_require__,
+	    __webpack_require__(5),
+	    __webpack_require__(18),
+	    __webpack_require__(33),
+	    __webpack_require__(2),
+	    __webpack_require__(7),
+	    __webpack_require__(19)
+	], __WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
+	    var _ = __webpack_require__(5),
+	        $ = __webpack_require__(7),
+	        utils = __webpack_require__(2),
+	        DiffDOM = __webpack_require__(33),
+	        diffDOM = new DiffDOM(),
+	        ngApp = __webpack_require__(19);
+	    console.log("require('modules/directives/body')");
+	    return ngApp.directive('body', function () {
+	        return {
+	            restrict: 'AE',
+	            controller: ['$scope', '$element', '$location', 'contentService', function ($scope, $element, $location, contentService) {
+	                console.log('ngBody.controller.initialize()');
+
+	                function interceptAction(evt) {
+	                    console.log('ngBody.interceptAction()');
+	                    var href = evt.currentTarget.href;
+	                    console.log('ngBody.interceptAction() - intercepting route to %s', href);
+	                    if (contentService.wordpress.hasPageSync(href) || contentService.wordpress.hasPostSync(href)) {
+	                        console.log('ngBody.interceptAction()  - routing to %s', utils.getPathFromUrl(href));
+	                        evt.preventDefault();
+	                        $scope.$apply(function () {
+	                            $location.path(utils.getPathFromUrl(href));
+	                        });
+	                    }
+	                }
+
+	                $scope.destroyClickables = function () {
+	                    console.log('ngBody.destroyClickables()');
+	                    if ($scope.clickables) $scope.clickables.off('click', null, interceptAction);
+	                    delete $scope.clickables;
+	                };
+
+	                $scope.createClickables = function () {
+	                    console.log('ngBody.createClickables()');
+	                    $scope.clickables = $element.find('[href]');
+	                    if (interceptAction) $scope.clickables.on('click', interceptAction);
+	                };
+
+	                $scope.sanitize = function () {
+	                    $scope.clickables.each(function (index, el) {
+	                        this.setAttribute('ng-href', this.href);
+	                    });
+	                };
+
+	                $scope.createClickables();
+
+
+	                $scope.$on('head:update', function (event, $DOM, route) {
+	                    console.log("body.controller.$scope.$on('view:update')");
+	                    $scope.destroyClickables();
+	                    // var $body = $DOM.find('body');
+	                    var $body = $DOM.find('body'),
+	                        $spaContent = $body.find('.spa-content__content'),
+	                        $liveSPAContent = $element.find('.spa-content__content');
+	                    console.log('body.view:update - new $spaContent: %o', $spaContent);
+
+	                    // remove scripts from new DOM.body
+	                    // var scripts = [],
+	                    //     $scripts = $spaContent.find('script');
+	                    // console.log('removing scripts from incoming DOM.body');
+	                    // $scripts.each(function (scriptEl, index) {
+	                    //     var $script = $(scriptEl),
+	                    //         $parent = $script.parent(),
+	                    //         parentId = route + index;
+	                    //     $parent.attr('data-spa-parent-id', parentId);
+	                    //     $script.remove();
+	                    //     scripts.push({
+	                    //         parentId: parentId,
+	                    //         $script: $script
+	                    //     })
+	                    // });
+
+	                    // update DOM.body
+	                    // console.log('ngBody.view:update - updating DOM.body.spa-content');
+	                    // var diffs = diffDOM.diff($liveSPAContent[0], $spaContent[0]);
+	                    // console.log("ngBody.view:update - diffDOM = %O", diffs);
+	                    // diffDOM.apply($liveSPAContent[0], diffs);
+	                    // $element.find('script').remove();
+	                    $liveSPAContent.replaceWith($spaContent);
+
+	                    _.forEach($body[0].attributes, function (attr, index) {
+	                        $element.attr(attr.name, attr.value);
+	                    });
+
+	                    // apply scripts from new DOM.body
+	                    // console.log('apply scripts from incoming DOM.body')
+	                    // _.forEach(scripts, function (scriptData, index) {
+	                    //     scriptData.$script.appendTo($element.find("[data-spa-parent-id='" + scriptData.parentId +"']"));
+	                    // });
+
+	                    // remove ng-cloak
+	                    // var $ngView = $element.find('[ng-view]');
+	                    // $ngView.removeAttr('ng-cloak');
+
+
+	                    $scope.createClickables();
+	                    $scope.sanitize();
+	                });
+
+	            }],
+	            link: function (scope, element, attrs, controller, transcludeFn) {
+	                console.log('body.link(%O)', arguments);
+	            }
+	        };
+	    });
+
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 
 /***/ }
