@@ -21,10 +21,13 @@ define([
             controller : 'mainController'
         };
 
+        /*
         $routeProvider
             .when('/:route*', defaultRouterParams)
             .otherwise(defaultRouterParams);
 
         return $routeProvider;
+        */
+        return {};
     }]);
 });

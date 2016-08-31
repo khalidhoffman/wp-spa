@@ -3,6 +3,7 @@ define([
     'diff-dom',
     'lodash',
     'jquery',
+    'modules/services/ast-builder.js',
     'ng-app'
 ], function (require) {
     var DiffDOM = require('diff-dom'),
@@ -10,6 +11,7 @@ define([
         skateDomDiff = require('skatejs-dom-diff'),
         _ = require('lodash'),
         $ = require('jquery'),
+        AST = require('modules/services/ast-builder.js'),
         ngApp = require('ng-app');
     return ngApp.directive('head', function () {
         return {
@@ -23,6 +25,7 @@ define([
                 $scope.cache = {
                     styles: []
                 };
+                $scope.elementChildren = [];
 
                 $scope.format = function($el){
                     console.log('ngHead() - formatting styles');
@@ -32,7 +35,12 @@ define([
                 };
 
                 function init(){
+    
                     $scope.format();
+
+                    $element.each(function(index, el){
+                        $scope.elementChildren.push(new AST.DOMNode($(el)));
+                    });
 
                     $scope.$on('view:update', function (event, $DOM, route) {
                         console.log("head.link()$scope.$on('view:update')");
@@ -64,6 +72,7 @@ define([
                         });
 
 
+                        /*
                         var liveHeadClone = document.createDocumentFragment();
                         var incomingHeadClone = document.createDocumentFragment();
 
@@ -82,13 +91,16 @@ define([
                         var $result = $(liveHeadClone).find('head');
                         console.log('ngHead - liveHeadClone.after: %o', liveHeadClone);
                         console.log('ngHead - $liveHeadClone.after: %o', $result);
+                        */
 
 
 
 
-                        // var diffs = diffDOM.diff($liveHead[0], $result[0]);
-                        // console.log("ngHead() - ngHead.view:update - diffDOM = %O", diffs);
-                        // diffDOM.apply($liveHead[0], diffs);
+                        /*
+                        var diffs = diffDOM.diff($liveHead[0], $head[0]);
+                        console.log("ngHead() - ngHead.view:update - diffDOM = %O", diffs);
+                        diffDOM.apply($liveHead[0], diffs);
+                        */
 
 
                         // apply styles from new DOM.head

@@ -151,8 +151,8 @@ class Wp_Spa_Public {
     }
 
     public function on_final_output($html){
-        $html = preg_replace('/(<\s*body[^>]*)>/', '$1 ng-controller=\'mainController\'><div ng-view><div class=\'spa-content\'><div class=\'spa-content__content\'>', $html);
-        $html = preg_replace('/(<\s*\/\s*body\s*\>)/', '</div></div></div>$1', $html);
+        $html = preg_replace('/(<\s*body[^>]*)>/', '$1 ng-controller=\'mainController\'><div class=\'spa-content\'><div class=\'spa-content__content\'>', $html);
+        $html = preg_replace('/(<\s*\/\s*body\s*\>)/', '</div></div>$1', $html);
         return $html;
     }
 
