@@ -1,8 +1,6 @@
 define([
         'require',
-        'url',
         'state',
-        'json!../../../../data/wp-spa.config.json',
         'jquery'
     ],
     function (require) {
@@ -16,12 +14,8 @@ define([
                     }
                 },
             pre = 'webkit',
-            url = require('url'),
             spaState = require('state');
             domParser = new DOMParser();
-        window['WP_Meta'] = require('json!../../../../data/wp-spa.config.json');
-        spaState.set('siteURL', window['WP_Meta'].siteURL);
-        spaState.set('siteURLMeta', url.parse(spaState.get('siteURL')));
 
 
         if (window.getComputedStyle) {
@@ -216,23 +210,23 @@ define([
             },
             /**
              * Sanitizes a path/url aka adds trailing slash if need be to any path
-             * @param {string} url
+             * @param {string} requestURL
              * @returns {string}
              */
-            sanitizeUrl: function (url) {
-                return (url.match('/\/$/')) ? url : url + '/';
+            sanitizeUrl: function (requestURL) {
+                return (requestURL.match('/\/$/')) ? requestURL : requestURL + '/';
             },
             /**
              *
-             * @param {string} url
+             * @param {string} requestURL
              * @returns {*|jQuery|HTMLElement}
              */
-            loadCss: function (url) {
+            loadCss: function (requestURL) {
                 var $link = $(document.createElement('link'));
                 $link.attr({
                     rel: 'stylesheet',
                     type: 'text/css',
-                    href: url
+                    href: requestURL
                 });
                 $link.appendTo('head');
                 return $link;

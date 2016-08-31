@@ -46,7 +46,8 @@ if(!function_exists('get_json_sitemap')){
 if(!function_exists('generate_json_config')){
 	function generate_json_config(){
 		$config = array(
-			'siteURL' => get_site_url()
+			'siteURL' => get_site_url(),
+			'useCache' => (null !== get_option('wp_spa_isCached') && get_option('wp_spa_isCached') == 1) ? true : false
 		);
                 $data_dir = dirname(__DIR__ . '../') . '/data/';
                 if(!file_exists($data_dir)) {

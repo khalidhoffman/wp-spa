@@ -1,11 +1,13 @@
 define([
     'require',
     'lodash',
+    'state',
     'utils',
     'ng-app'
 ], function (require) {
     var _ = require('lodash'),
         utils = require('utils'),
+        spaState = require('state'),
         ngApp = require('ng-app');
 
     console.log("require('content-service')");
@@ -171,8 +173,8 @@ define([
          */
         this.getHTML = function(route, options){
             var _options = _.defaults(options, {
-                useCache: true,
-                cache: true
+                useCache: spaState.get('useCache'),
+                cache: spaState.get('useCache')
             });
             if (_options.useCache && self._cache[route]) {
                 var $DOM = self._cache[route].clone();

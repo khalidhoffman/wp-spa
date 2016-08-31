@@ -8,6 +8,6 @@
 *
 * @package    Wp_Spa
 * @subpackage Wp_Spa/admin/partials
-*/ ?><div class="heading"><div class="heading_content"><?php echo esc_html(get_admin_page_title());; ?></div></div><div class="settings"><div class="setting__content"><div class="setting-section setting-section--actions"><a href="#" class="button button-primary button--update">Update WP-SPA</a></div><div class="setting-section setting-section--vars"><?php settings_fields($this->plugin_name);
+*/ ?><div class="heading"><h1 class="heading_content"><?php echo esc_html(get_admin_page_title());; ?></h1></div><div class="settings"><div class="setting__content"><div class="setting-section setting-section--actions"><a href="?page=wp-spa&amp;action=update" class="button button-primary button--update">Update WP-SPA</a></div><div class="setting-section setting-section--vars"><div class="setting-section__content"><form action="options.php" method="post" class="setting-form"><?php settings_fields($this->plugin_name);
 do_settings_sections($this->plugin_name);
-submit_button(); ?></div></div></div>
+submit_button(); ?></form></div></div></div></div>

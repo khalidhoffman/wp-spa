@@ -12,7 +12,8 @@ var path = require('path'),
 
 // dev task that watches and executes appropriate tasks as necessary
 gulp.task('auto', function(){
-    gulp.watch(projectUtils.buildGlobArray(project.tasks['pug'], '/**/*.pug'), ['pug-php']);
+    // gulp.watch(projectUtils.buildGlobArray(project.tasks['pug'], '/**/*.pug'), ['pug-php']);
+    gulp.watch(projectUtils.buildGlobArray(project.tasks['jade'], '/**/*.jade'), ['jade-php']);
     gulp.watch(projectUtils.buildGlobArray(project.tasks['stylus'], '/**/*.styl'), ['stylus']);
     // gulp.watch(projectUtils.buildGlobArray(project.tasks['pugjs'], '/**/*.pug'), ['pug-js']);
     // gulp.watch(projectUtils.buildGlobArray(project.tasks['jsx'], '!(node_modules|vendors)/**/*.jsx'), ['babel']);

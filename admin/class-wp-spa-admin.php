@@ -1,4 +1,6 @@
 <?php
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
 
 /**
  * The admin-specific functionality of the plugin.
@@ -27,20 +29,21 @@ class Wp_Spa_Admin {
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
+	 * @var      string $plugin_name The ID of this plugin.
 	 */
 	private $plugin_name;
 
 	private $option_namespace = 'wp_spa';
 	private $plugin_text_namespace = 'wp_spa';
 	private $main_settings_option_name = 'general';
+	private $message_queue = array();
 
 	/**
 	 * The version of this plugin.
 	 *
 	 * @since    1.0.0
 	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
+	 * @var      string $version The current version of this plugin.
 	 */
 	private $version;
 
@@ -48,14 +51,78 @@ class Wp_Spa_Admin {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
+	 *
+	 * @param      string $plugin_name The name of this plugin.
+	 * @param      string $version The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
 
-		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+		$log = new Logger( 'wp_spa_admin_log' );
+		$log->pushHandler( new StreamHandler( dirname( __DIR__ . '/../../' ) . "/data/dev.log", Logger::INFO ) );
+		$this->logger = $log;
 
+		$this->plugin_name = $plugin_name;
+		$this->version     = $version;
+		$this->perform_actions();
+	}
+
+	private function perform_actions(){
+		if(isset($_GET['page']) && $_GET['page'] == 'wp-spa'){
+			if(isset($_GET['action'])){
+				$action = $_GET['action'];
+				switch($action){
+					case 'update':
+						$this->updateCachedSettings();
+						break;
+					default:
+						break;
+				}
+			}
+		}
+	}
+
+	private function updateCachedSettings(){
+		generate_json_config();
+		array_push($this->message_queue, array(
+			'text' => 'updated JSON',
+			'type' => 'info'
+		));
+	}
+
+	private function render_message($message_meta){
+		switch($message_meta['type']){
+			case 'info':
+			case 'error':
+			case 'warning':
+			case 'success':
+				$class_name = 'notice-'.$message_meta['type'];
+				break;
+			default:
+				$class_name = 'notice-info';
+				break;
+		}
+		return sprintf("<div class='notice %s is-dismissible'><p>%s</p></div>", $class_name, _($message_meta['text']));
+	}
+
+	public function get_messages(){
+		return $this->message_queue;
+	}
+
+
+	public function print_messages(){
+
+		foreach($this->get_messages() as $message_meta){
+			switch($message_meta['type']){
+				case 'info':
+				case 'warning':
+				case 'error':
+				case 'success':
+					echo $this->render_message($message_meta);
+					break;
+				default:
+					break;
+			}
+		}
 	}
 
 	/**
@@ -113,7 +180,7 @@ class Wp_Spa_Admin {
 
 		$this->plugin_screen_hook_suffix = add_options_page(
 			__( 'WP-SPA Settings', $this->plugin_text_namespace ),
-			__( 'WP-SPA Settings',  $this->plugin_text_namespace),
+			__( 'WP-SPA Settings', $this->plugin_text_namespace ),
 			'manage_options',
 			$this->plugin_name,
 			array( $this, 'display_options_page' )
@@ -131,40 +198,59 @@ class Wp_Spa_Admin {
 	}
 
 
-	private function generate_option_namespace_suffix($option_name){
+	private function generate_option_namespace_suffix( $option_name ) {
 		return '_' . $option_name;
 	}
 
 
-	private function add_setting($option_name, $label = "New Option"){
+	private function add_setting( $option_name, $label = "New Option", $type = 'text', $callback=false ) {
 
-		$option_namespace_suffix = $this->generate_option_namespace_suffix($option_name);
-		register_setting( $this->plugin_name, $this->option_namespace . $option_namespace_suffix, array(
-			$this,
-			$this->option_namespace . '_sanitize' . $option_namespace_suffix
-		) );
+		$input_type              = strtolower( $type );
+		$option_namespace_suffix = $this->generate_option_namespace_suffix( $option_name );
+		$option_lookup_name      = $this->option_namespace . $option_namespace_suffix;
+		if($callback){
+			register_setting(
+				$this->plugin_name,
+				$this->option_namespace . $option_namespace_suffix,
+				array($this, $callback)
+			);
+		} else {
+			register_setting(
+				$this->plugin_name,
+				$this->option_namespace . $option_namespace_suffix
+			);
+		}
 
-		add_settings_field(
-			$this->option_namespace . $option_namespace_suffix,
-			__( $label, $this->plugin_text_namespace ),
-			array( $this, $this->option_namespace . $option_namespace_suffix . '_cb' ),
-			$this->plugin_name,
-			$this->option_namespace . $this->generate_option_namespace_suffix($this->main_settings_option_name),
-			array( 'label_for' => $this->option_namespace . $option_namespace_suffix )
-		);
+		switch ( $input_type ) {
+			case 'text':
+			case 'checkbox':
+				add_settings_field(
+					$option_lookup_name,
+					__( $label, $this->plugin_text_namespace ),
+					array( $this, $this->option_namespace . '_' . strtolower( $type ) . '_cb' ),
+					$this->plugin_name,
+					$this->option_namespace . $this->generate_option_namespace_suffix( $this->main_settings_option_name ),
+					array( 'name' => $option_lookup_name, 'label' => $label )
+				);
+				break;
+			default:
+				error_log( 'wp-spa.admin received an invalid input type:' . $type );
+				break;
+		}
 	}
 
 	public function register_settings() {
 		add_settings_section(
-			$this->option_namespace . $this->generate_option_namespace_suffix($this->main_settings_option_name),
+			$this->option_namespace . $this->generate_option_namespace_suffix( $this->main_settings_option_name ),
 			__( 'General', $this->plugin_text_namespace ),
 			array( $this, 'options_heading' ),
 			$this->plugin_name
 		);
 
-		$this->add_setting('test', "Test");
+		$this->add_setting( 'test', "Test" );
+		$this->add_setting( 'isCached', "Cache Pages", 'checkbox', 'sanitize_checkbox' );
 
-		register_setting( $this->plugin_name, $this->option_namespace . '_tokenExpiration');
+		register_setting( $this->plugin_name, $this->option_namespace . '_tokenExpiration' );
 		register_setting( $this->plugin_name, $this->option_namespace . '_token' );
 	}
 
@@ -174,24 +260,38 @@ class Wp_Spa_Admin {
 	 * @since  1.0.0
 	 */
 	public function options_heading() {
-		echo '<p>' . __( 'WP-SPA.', $this->plugin_text_namespace ) . '</p>';
+		include_once 'partials/wp-spa-admin-display-heading.php';
 	}
 
+	public function sanitize_checkbox($val){
+		$this->logger->addInfo('sanitizing checkbox', array(func_get_args(), (isset($val))));
+		return (isset($val)) ? 1 : 0;
+	}
 
 	/**
 	 * Render the input field for API Key
 	 *
 	 * @since  1.0.0
 	 */
-	public function wp_spa_test_cb() {
-		$option_suffix = $this->generate_option_namespace_suffix('test');
-		$retailerId  = get_option( $this->option_namespace . $option_suffix );
-		echo '<input type="text" name="' . $this->option_namespace . $option_suffix . '" id="' . $this->option_namespace . $option_suffix . '" value="' . $retailerId . '"> ';
+	public function wp_spa_checkbox_cb( $args ) {
+		$option_name  = $args['name'];
+		$option_value = get_option( $option_name );
+		echo '<input type="checkbox" name="' . $option_name
+		     . '" id="' . $option_name
+		     . '" value="' . $option_value
+		     . '" '. ($option_value ? 'checked' : '')
+		     . '/> ';
+	}
+
+	public function wp_spa_text_cb( $args ) {
+		$option_name  = $args['name'];
+		$option_value = get_option( $option_name );
+		echo '<input type="text" name="' . $option_name . '" id="' . $option_name . '" value="' . $option_value . '"/> ';
 	}
 
 	function wp_spa_show_json_sitemap() {
-		if (isset($_GET['show_sitemap'])) {
-			die(json_encode(get_json_sitemap()));
+		if ( isset( $_GET['show_sitemap'] ) ) {
+			die( json_encode( get_json_sitemap() ) );
 		}
 	}
 
