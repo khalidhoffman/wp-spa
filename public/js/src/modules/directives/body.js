@@ -4,11 +4,13 @@ define([
     'modules/services/content-service',
     "diff-dom",
     'utils',
+    'utils',
     "jquery",
     'ng-app'
 ], function (require) {
     var _ = require('lodash'),
         $ = require('jquery'),
+        url = require('url'),
         utils = require('utils'),
         DiffDOM = require('diff-dom'),
         diffDOM = new DiffDOM(),
@@ -22,9 +24,15 @@ define([
 
                 function interceptAction(evt) {
                     console.log('ngBody.interceptAction()');
-                    var href = evt.currentTarget.href;
-                    console.log('ngBody.interceptAction() - intercepting route to %s', href);
-                    if (contentService.wordpress.hasPageSync(href) || contentService.wordpress.hasPostSync(href)) {
+                    var currentHref = location.href.replace(/#.*/i, ''),
+                        href = evt.currentTarget.href,
+                        hrefSansHash = href.replace(/#.*/i, '');
+
+                    console.log('ngBody.interceptAction() - intercepting route to %s (%s)', href, hrefSansHash);
+                    if(currentHref == hrefSansHash) {
+                        // same page. only a hash change. so ignore
+                        console.log('ngBody.interceptAction() - no-op')
+                    } else if (contentService.wordpress.hasPageSync(href) || contentService.wordpress.hasPostSync(href)) {
                         console.log('ngBody.interceptAction()  - routing to %s', utils.getPathFromUrl(href));
                         evt.preventDefault();
                         $scope.$apply(function () {
@@ -80,6 +88,9 @@ define([
                     // });
 
                     // update DOM.body
+                    _.forEach($body[0].attributes, function (attr, index) {
+                        $element.attr(attr.name, attr.value);
+                    });
                     // console.log('ngBody.view:update - updating DOM.body.spa-content');
                     // var diffs = diffDOM.diff($liveSPAContent[0], $spaContent[0]);
                     // console.log("ngBody.view:update - diffDOM = %O", diffs);
@@ -87,9 +98,6 @@ define([
                     // $element.find('script').remove();
                     $liveSPAContent.replaceWith($spaContent);
 
-                    _.forEach($body[0].attributes, function (attr, index) {
-                        $element.attr(attr.name, attr.value);
-                    });
 
                     // apply scripts from new DOM.body
                     // console.log('apply scripts from incoming DOM.body')
