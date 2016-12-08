@@ -224,6 +224,7 @@ class Wp_Spa {
 			$this->loader->add_action( 'wp_head', $plugin_public, 'wp_spa_head_meta' );
 		}
 
+		$this->loader->add_action( 'wp_head', $plugin_public, 'on_wp_head' );
 		$this->loader->add_action( 'wp_ajax_nopriv_wp_spa', $plugin_public, 'handle_request' );
 		$this->loader->add_action( 'wp_ajax_wp_spa', $plugin_public, 'handle_request' );
 		$this->loader->add_action( 'template_redirect', $plugin_public, 'wp_spa_show_json_sitemap' );

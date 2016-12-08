@@ -1,0 +1,33 @@
+@keyframes pageOut
+  100%
+    opacity 0
+    transform translateY(5em) scale(.75, .75);
+
+@keyframes pageIn
+  0%
+    transform translateY(100vh);
+  100%
+    transform translateY(0);
+
+
+#container-page-content,
+.animate-page-in,
+.animate-page-out 
+  background-color: $color-white;
+
+.animate-page-out,
+.animate-page-in 
+  left:0;
+  position: relative;
+  top: 0;
+  width: 100%;
+
+.animate-page-out 
+  animation pageOut $duration-transition-short-ms $timing-animation-page-exit forwards;
+  z-index: 101;
+
+.animate-page-in 
+  animation pageIn $duration-transition-default-ms $timing-animation-page-entry;
+  transform translate3d(0, 0, 0);
+  position: absolute;
+  z-index: 102;

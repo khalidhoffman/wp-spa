@@ -21,7 +21,10 @@
   "author": "Khalid Hoffman",
   "license": "ISC",
   "devDependencies": {
+    "expose-loader": "^0.7.1",
     "gulp-utils": "git+https://github.com/khalidhoffman/gulp-utils.git#dev",
+    "imports-loader": "^0.6.5",
+    "jquery": "^3.1.1",
     "webpack": "^1.13.2"
   },
   "dependencies": {

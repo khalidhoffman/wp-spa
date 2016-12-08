@@ -1,6 +1,6 @@
 {
   "name": "wp-spa",
-  "basePath" : "default",
+  "workingDir" : "default",
   "tasks" : [
     {
       "name" : "pug-ejs",
@@ -50,6 +50,11 @@
       "name" : "stylus",
       "input": "admin/stylus/",
       "output": "admin/css/"
+    },
+    {
+      "name" : "stylus-bem",
+      "input": "public/css/",
+      "output": "public/css/"
     },
     {
       "name": "sass",

@@ -1,3 +1,5 @@
+*.swp
+*.swo
 /data/*
 composer.lock
 ### JetBrains template
@@ -106,4 +108,3 @@ node_modules
 
 # Created by .ignore support plugin (hsz.mobi)
 
-/vendor/

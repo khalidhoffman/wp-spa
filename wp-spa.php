@@ -31,6 +31,8 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+define("WP_SPA_PLUGIN_OPTIONS_URL", site_url("/wp-admin/options-general.php?page=wp-spa"));
+
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-wp-spa-activator.php

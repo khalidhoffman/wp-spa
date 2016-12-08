@@ -1,56 +1,54 @@
-define([
-    'require',
-    'lodash',
-    'modules/services/content-service',
-    "diff-dom",
-    'utils',
-    'utils',
-    "jquery",
-    'ng-app'
-], function (require) {
-    var _ = require('lodash'),
-        $ = require('jquery'),
-        url = require('url'),
-        utils = require('utils'),
-        DiffDOM = require('diff-dom'),
-        diffDOM = new DiffDOM(),
-        ngApp = require('ng-app');
-    console.log("require('modules/directives/body')");
-    return ngApp.directive('body', function () {
-        return {
-            restrict: 'AE',
-            controller: ['$scope', '$element', '$location', 'contentService', function ($scope, $element, $location, contentService) {
+var _ = require('lodash'),
+    $ = require('jquery'),
+    url = require('url'),
+    utils = require('utils'),
+    config = require('modules/services/config-loader'),
+    DiffDOM = require('diff-dom'),
+    diffDOM = new DiffDOM(),
+    ngApp = require('ng-app');
+
+console.log("require('modules/directives/body')");
+
+ngApp.directive('body', function () {
+    return {
+        restrict: 'AE',
+        controller: [
+            '$scope', '$element', '$location', 'contentLoader', 'configLoader',
+            function ($scope, $element, $location, contentLoader, configLoader) {
                 console.log('ngBody.controller.initialize()');
+                $scope.mainSelector = configLoader.getMainSelector();
+                $scope.$root = $element.find('.spa-content');
+                console.log('mainSelector: %o', $scope.mainSelector);
 
                 function interceptAction(evt) {
                     console.log('ngBody.interceptAction()');
-                    var currentHref = location.href.replace(/#.*/i, ''),
-                        href = evt.currentTarget.href,
-                        hrefSansHash = href.replace(/#.*/i, '');
+                    var targetHref = evt.currentTarget.href,
+                        targetHrefMeta = url.parse(targetHref),
+                        targetPath = targetHref.replace(/#.*/i, '');
 
-                    console.log('ngBody.interceptAction() - intercepting route to %s (%s)', href, hrefSansHash);
-                    if(currentHref == hrefSansHash) {
+                    console.log('ngBody.interceptAction() - intercepting route to %s (%s)', targetHref, targetPath);
+                    if (targetHrefMeta.hash) {
                         // same page. only a hash change. so ignore
                         console.log('ngBody.interceptAction() - no-op')
-                    } else if (contentService.wordpress.hasPageSync(href) || contentService.wordpress.hasPostSync(href)) {
-                        console.log('ngBody.interceptAction()  - routing to %s', utils.getPathFromUrl(href));
+                    } else if (contentLoader.wordpress.hasPageSync(targetHref) || contentLoader.wordpress.hasPostSync(targetHref)) {
+                        console.log('ngBody.interceptAction()  - routing to %s', utils.getPathFromUrl(targetHref));
                         evt.preventDefault();
                         $scope.$apply(function () {
-                            $location.path(utils.getPathFromUrl(href));
+                            $location.path(utils.getPathFromUrl(targetHref));
                         });
                     }
                 }
 
-                $scope.destroyClickables = function () {
-                    console.log('ngBody.destroyClickables()');
+                $scope.destroyClickOverrides = function () {
+                    console.log('ngBody.destroyClickOverrides()');
                     if ($scope.clickables) $scope.clickables.off('click', null, interceptAction);
                     delete $scope.clickables;
                 };
 
-                $scope.createClickables = function () {
-                    console.log('ngBody.createClickables()');
+                $scope.createClickOverrides = function () {
+                    console.log('ngBody.createClickOverrides()');
                     $scope.clickables = $element.find('[href]');
-                    if (interceptAction) $scope.clickables.on('click', interceptAction);
+                    $scope.clickables.on('click', interceptAction);
                 };
 
                 $scope.sanitize = function () {
@@ -59,67 +57,74 @@ define([
                     });
                 };
 
-                $scope.createClickables();
 
-
-                $scope.$on('head:update', function (event, $DOM, route) {
-                    console.log("body.controller.$scope.$on('view:update')");
-                    $scope.destroyClickables();
-                    // var $body = $DOM.find('body');
-                    var $body = $DOM.find('body'),
-                        $spaContent = $body.find('.spa-content__content'),
-                        $liveSPAContent = $element.find('.spa-content__content');
-                    console.log('body.view:update - new $spaContent: %o', $spaContent);
-
-                    // remove scripts from new DOM.body
-                    // var scripts = [],
-                    //     $scripts = $spaContent.find('script');
-                    // console.log('removing scripts from incoming DOM.body');
-                    // $scripts.each(function (scriptEl, index) {
-                    //     var $script = $(scriptEl),
-                    //         $parent = $script.parent(),
-                    //         parentId = route + index;
-                    //     $parent.attr('data-spa-parent-id', parentId);
-                    //     $script.remove();
-                    //     scripts.push({
-                    //         parentId: parentId,
-                    //         $script: $script
-                    //     })
-                    // });
-
-                    // update DOM.body
-                    _.forEach($body[0].attributes, function (attr, index) {
-                        $element.attr(attr.name, attr.value);
-                    });
-                    // console.log('ngBody.view:update - updating DOM.body.spa-content');
-                    // var diffs = diffDOM.diff($liveSPAContent[0], $spaContent[0]);
-                    // console.log("ngBody.view:update - diffDOM = %O", diffs);
-                    // diffDOM.apply($liveSPAContent[0], diffs);
-                    // $element.find('script').remove();
-                    $liveSPAContent.replaceWith($spaContent);
-
-
-                    // apply scripts from new DOM.body
-                    // console.log('apply scripts from incoming DOM.body')
-                    // _.forEach(scripts, function (scriptData, index) {
-                    //     scriptData.$script.appendTo($element.find("[data-spa-parent-id='" + scriptData.parentId +"']"));
-                    // });
-
-                    // remove ng-cloak
-                    // var $ngView = $element.find('[ng-view]');
-                    // $ngView.removeAttr('ng-cloak');
-
-
-                    $scope.createClickables();
+                $scope.setup = function () {
+                    $scope.createClickOverrides();
                     $scope.sanitize();
-                });
+                };
+
+                $scope.cache = {};
+
+                function init() {
+                    var $scripts= $('html').find('script');
+                    $scripts.remove();
+
+                    $scripts.appendTo($scope.$root);
+                    configLoader.getConfig(function (configData) {
+                        $scope.setup();
+
+                        $scope.$on('head:update', function (event, data) {
+                            console.log("body.controller.$scope.$on('view:update')");
+                            $scope.destroyClickOverrides();
+                            // var $body = $DOM.find('body');
+                            var $DOM = data.$DOM,
+                                route = data.path,
+                                $body = $DOM.find('body'),
+                                $newContent = $body.find($scope.mainSelector),
+                                $newScripts = data.old.$scripts,
+                                $activeContent = $element.find($scope.mainSelector);
+                                // $loadedElements = $body.find("[data-spa-loaded='true']");
+                            console.log('body.view:update - new $spaContent: %o', $newContent);
+
+
+                            // update DOM.body
+                            _.forEach($body[0].attributes, function (attr, index) {
+                                $element.attr(attr.name, attr.value);
+                            });
+
+                            $newScripts.appendTo($newContent);
+                            // $loadedElements.remove();
+
+
+                            $activeContent.one('animationend', function(){
+                                $scope.cache[route] = $activeContent;
+                                $activeContent.detach();
+                                $activeContent.removeClass('animate-page-out');
+                            });
+
+                            debugger;
+                            $activeContent.addClass('animate-page-out');
+                            $newContent.addClass('animate-page-in');
+
+                            $scope.$root.append($newContent);
+                            $newContent.one('animationend', function(){
+                                $newContent.removeClass('animate-page-in');
+                            });
+
+                            $scope.setup();
+                        });
+                    });
+                }
+
+
+                init();
 
             }],
-            link: function (scope, element, attrs, controller, transcludeFn) {
-                console.log('body.link(%O)', arguments);
-            }
-        };
-    });
-
+        link: function (scope, element, attrs, controller, transcludeFn) {
+            console.log('body.link(%O)', arguments);
+        }
+    };
 });
+
+module.exports = ngApp;
 

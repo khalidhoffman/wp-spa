@@ -1,4 +1,114 @@
-/**
- * All of the CSS for your public-facing functionality should be
- * included in this file.
- */
+#container-page-content,
+.animate-page-in,
+.animate-page-out {
+  background-color: $color-white;
+}
+.animate-page-out,
+.animate-page-in {
+  left: 0;
+  position: relative;
+  top: 0;
+  width: 100%;
+}
+.animate-page-out {
+  -webkit-animation: pageOut 250ms $timing-animation-page-exit forwards;
+  animation: pageOut 250ms $timing-animation-page-exit forwards;
+  z-index: 101;
+}
+.animate-page-in {
+  -webkit-animation: pageIn 400ms $timing-animation-page-entry;
+  animation: pageIn 400ms $timing-animation-page-entry;
+  -webkit-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  position: absolute;
+  z-index: 102;
+}
+@-moz-keyframes pageOut {
+  100% {
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+    filter: alpha(opacity=0);
+    opacity: 0;
+    -webkit-transform: translateY(5em) scale(0.75, 0.75);
+    -ms-transform: translateY(5em) scale(0.75, 0.75);
+    transform: translateY(5em) scale(0.75, 0.75);
+  }
+}
+@-webkit-keyframes pageOut {
+  100% {
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+    filter: alpha(opacity=0);
+    opacity: 0;
+    -webkit-transform: translateY(5em) scale(0.75, 0.75);
+    -ms-transform: translateY(5em) scale(0.75, 0.75);
+    transform: translateY(5em) scale(0.75, 0.75);
+  }
+}
+@-o-keyframes pageOut {
+  100% {
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+    filter: alpha(opacity=0);
+    opacity: 0;
+    -webkit-transform: translateY(5em) scale(0.75, 0.75);
+    -ms-transform: translateY(5em) scale(0.75, 0.75);
+    transform: translateY(5em) scale(0.75, 0.75);
+  }
+}
+@keyframes pageOut {
+  100% {
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+    filter: alpha(opacity=0);
+    opacity: 0;
+    -webkit-transform: translateY(5em) scale(0.75, 0.75);
+    -ms-transform: translateY(5em) scale(0.75, 0.75);
+    transform: translateY(5em) scale(0.75, 0.75);
+  }
+}
+@-moz-keyframes pageIn {
+  0% {
+    -webkit-transform: translateY(100vh);
+    -ms-transform: translateY(100vh);
+    transform: translateY(100vh);
+  }
+  100% {
+    -webkit-transform: translateY(0);
+    -ms-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+@-webkit-keyframes pageIn {
+  0% {
+    -webkit-transform: translateY(100vh);
+    -ms-transform: translateY(100vh);
+    transform: translateY(100vh);
+  }
+  100% {
+    -webkit-transform: translateY(0);
+    -ms-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+@-o-keyframes pageIn {
+  0% {
+    -webkit-transform: translateY(100vh);
+    -ms-transform: translateY(100vh);
+    transform: translateY(100vh);
+  }
+  100% {
+    -webkit-transform: translateY(0);
+    -ms-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+@keyframes pageIn {
+  0% {
+    -webkit-transform: translateY(100vh);
+    -ms-transform: translateY(100vh);
+    transform: translateY(100vh);
+  }
+  100% {
+    -webkit-transform: translateY(0);
+    -ms-transform: translateY(0);
+    transform: translateY(0);
+  }
+}

@@ -3,10 +3,10 @@ var path = require('path'),
     fs = require('fs'),
 
 
-    wpConfig = (function(){
+    wpConfig = (function () {
         var config = {
             domain: '127.0.0.1',
-            path : '/'
+            path: '/'
         };
         try {
             var localConfigStr = fs.readFileSync(path.resolve(__dirname, 'data/wp-spa.config.json')),
@@ -14,7 +14,7 @@ var path = require('path'),
                 siteURLMeta = url.parse(localConfig.siteURL);
             config.domain = siteURLMeta.host;
             config.path = siteURLMeta.pathname;
-        } catch(err){
+        } catch (err) {
             console.warn(err);
         }
         return config;
@@ -23,7 +23,7 @@ var path = require('path'),
     ModuleReplace = webpack.NormalModuleReplacementPlugin;
 
 module.exports = {
-    entry: "app-dev.js",
+    entry: "app.js",
     context: path.resolve(__dirname, 'public/js/src/'),
     output: {
         path: './public/js/',
@@ -31,14 +31,20 @@ module.exports = {
         filename: "wp-spa-public.js"
     },
     module: {
-        loaders: [{
-            test: /\.md$/,
-            loader: 'raw!'
-        }]
+        loaders: [
+            {
+                test: /\.md$/,
+                loader: 'raw!'
+            },
+            {
+                test: /jquery/,
+                loader: "expose?jQuery"
+            }
+        ]
     },
     resolve: {
         root: path.resolve(__dirname, 'public/js/src/'),
-        modulesDirectories: ['./', '../../../node_modules'],
+        modulesDirectories: ['./', path.join(process.cwd(), 'node_modules')],
         extensions: ['', '.js'],
         alias: {
             "ng-app": "modules/ng-app",
@@ -51,9 +57,6 @@ module.exports = {
             "config": "modules/config",
             "null-module": "modules/null-module",
             "utils": "modules/utils",
-
-            "jquery-original": "vendors/jquery-3.1.0.min",
-            "jquery": "vendors/jquery-noconflict",
 
             "live": "vendors/live",
             "moment": "vendors/moment/moment",
@@ -71,16 +74,16 @@ module.exports = {
         new ModuleReplace(/^(domReady\!)$/, 'modules/null-module'),
 
         // Hack for requirejs's text plugin
-        new ModuleReplace(/^text!.+$/, function(ctx) {
+        new ModuleReplace(/^text!.+$/, function (ctx) {
             ctx.request = ctx.request.replace(/text!/, 'raw!');
         }),
 
         // Hack for requirejs's css plugin
-        new ModuleReplace(/^css!.+$/, function(ctx) {
+        new ModuleReplace(/^css!.+$/, function (ctx) {
             ctx.request = 'style!' + ctx.request;
         })
     ],
-    node : {
+    node: {
         'path': true,
         'url': true
     }

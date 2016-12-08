@@ -1,4 +1,5 @@
 <?php
+use PHPHtmlParser\Dom;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
@@ -71,7 +72,7 @@ class Wp_Spa_Public {
 	}
 
 	public function wp_spa_show_json_sitemap() {
-		if (isset($_GET['show_sitemap'])) {
+		if (isset($_GET['show_json_sitemap'])) {
 			die(json_encode(get_json_sitemap()));
 		}
 	}
@@ -133,6 +134,17 @@ class Wp_Spa_Public {
 		die( 'success' );
 	}
 
+	public function on_wp_head(){
+		$html_output = '';
+		$meta_data = array(
+			'wp-spa-base-url' => get_site_url()
+		);
+		foreach($meta_data as $meta_name => $meta_content){
+			$html_output = "<meta name='$meta_name' content='$meta_content'>";
+		};
+		echo $html_output;
+	}
+
 
 	public function on_shutdown(){
         $final = '';
@@ -151,8 +163,17 @@ class Wp_Spa_Public {
     }
 
     public function on_final_output($html){
-        $html = preg_replace('/(<\s*body[^>]*)>/', '$1 ng-controller=\'mainController\'><div class=\'spa-content\'><div class=\'spa-content__content\'>', $html);
-        $html = preg_replace('/(<\s*\/\s*body\s*\>)/', '</div></div>$1', $html);
+		$template_name = get_current_template();
+	    // add attrs and wrapper elements to opening body tag
+	    $html = preg_replace("/(<\s*html[^>]*)>/", "$1 ng-app='dp-spa'>", $html);
+
+		// add attrs and wrapper elements to opening body tag
+        $html = preg_replace("/(<\s*body[^>]*)>/", "$1 data-spa-template=\"$template_name\" ng-controller=\"mainController\"><div class=\"spa-content\"><div class=\"spa-content__content\">", $html);
+
+	    // add closing tags to closing body tag
+        $html = preg_replace("/(<\s*\/\s*body\s*\>)/", "</div></div>$1", $html);
+
+
         return $html;
     }
 

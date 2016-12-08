@@ -10,5 +10,7 @@
             "email": "khaliddpdev@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "paquettg/php-html-parser": "^1.7"
+    }
 }
