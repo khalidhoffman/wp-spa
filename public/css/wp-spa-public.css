@@ -1,8 +1,3 @@
-#container-page-content,
-.animate-page-in,
-.animate-page-out {
-  background-color: $color-white;
-}
 .animate-page-out,
 .animate-page-in {
   left: 0;
@@ -11,13 +6,13 @@
   width: 100%;
 }
 .animate-page-out {
-  -webkit-animation: pageOut 250ms $timing-animation-page-exit forwards;
-  animation: pageOut 250ms $timing-animation-page-exit forwards;
+  -webkit-animation: pageOut 250ms ease forwards;
+  animation: pageOut 250ms ease forwards;
   z-index: 101;
 }
 .animate-page-in {
-  -webkit-animation: pageIn 400ms $timing-animation-page-entry;
-  animation: pageIn 400ms $timing-animation-page-entry;
+  -webkit-animation: pageIn 400ms ease;
+  animation: pageIn 400ms ease;
   -webkit-transform: translate3d(0, 0, 0);
   -ms-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);

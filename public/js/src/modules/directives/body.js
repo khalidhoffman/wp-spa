@@ -15,10 +15,7 @@ ngApp.directive('body', function () {
         controller: [
             '$scope', '$element', '$location', 'contentLoader', 'configLoader',
             function ($scope, $element, $location, contentLoader, configLoader) {
-                console.log('ngBody.controller.initialize()');
                 $scope.mainSelector = configLoader.getMainSelector();
-                $scope.$root = $element.find('.spa-content');
-                console.log('mainSelector: %o', $scope.mainSelector);
 
                 function interceptAction(evt) {
                     console.log('ngBody.interceptAction()');
@@ -40,13 +37,11 @@ ngApp.directive('body', function () {
                 }
 
                 $scope.destroyClickOverrides = function () {
-                    console.log('ngBody.destroyClickOverrides()');
                     if ($scope.clickables) $scope.clickables.off('click', null, interceptAction);
                     delete $scope.clickables;
                 };
 
                 $scope.createClickOverrides = function () {
-                    console.log('ngBody.createClickOverrides()');
                     $scope.clickables = $element.find('[href]');
                     $scope.clickables.on('click', interceptAction);
                 };
@@ -66,20 +61,15 @@ ngApp.directive('body', function () {
                 $scope.cache = {};
 
                 function init() {
-                    var $scripts= $('html').find('script');
-                    $scripts.remove();
-
-                    $scripts.appendTo($scope.$root);
                     configLoader.getConfig(function (configData) {
                         $scope.setup();
 
                         $scope.$on('head:update', function (event, data) {
-                            console.log("body.controller.$scope.$on('view:update')");
                             $scope.destroyClickOverrides();
-                            // var $body = $DOM.find('body');
                             var $DOM = data.$DOM,
                                 route = data.path,
                                 $body = $DOM.find('body'),
+                                $root = data.$root,
                                 $newContent = $body.find($scope.mainSelector),
                                 $newScripts = data.old.$scripts,
                                 $activeContent = $element.find($scope.mainSelector);
@@ -92,7 +82,7 @@ ngApp.directive('body', function () {
                                 $element.attr(attr.name, attr.value);
                             });
 
-                            $newScripts.appendTo($newContent);
+                            // $newScripts.appendTo($newContent);
                             // $loadedElements.remove();
 
 
@@ -100,18 +90,18 @@ ngApp.directive('body', function () {
                                 $scope.cache[route] = $activeContent;
                                 $activeContent.detach();
                                 $activeContent.removeClass('animate-page-out');
+                                $scope.setup();
                             });
-
-                            debugger;
                             $activeContent.addClass('animate-page-out');
-                            $newContent.addClass('animate-page-in');
 
-                            $scope.$root.append($newContent);
+
+                            $root.append($newContent);
                             $newContent.one('animationend', function(){
                                 $newContent.removeClass('animate-page-in');
                             });
 
-                            $scope.setup();
+                            $newContent.addClass('animate-page-in');
+
                         });
                     });
                 }

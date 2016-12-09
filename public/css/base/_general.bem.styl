@@ -1,3 +1,7 @@
+$duration-transition-short-ms= 250ms;
+$duration-transition-default-ms= 400ms;
+$timing-animation-page-exit= ease;
+$timing-animation-page-entry= ease;
 @keyframes pageOut
   100%
     opacity 0
@@ -8,12 +12,6 @@
     transform translateY(100vh);
   100%
     transform translateY(0);
-
-
-#container-page-content,
-.animate-page-in,
-.animate-page-out 
-  background-color: $color-white;
 
 .animate-page-out,
 .animate-page-in 

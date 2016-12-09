@@ -10,14 +10,14 @@ define([
     function init(){
         window.angular.bootstrap(document, ['dp-spa']);
     }
-    if(document.readyState === "complete") {
-        //Already loaded!
-        init();
-    }
-    else {
-        $(window).on('load', function(){
-            init();
-        });
-    }
+    // if(document.readyState === "complete") {
+    //     //Already loaded!
+    //     init();
+    // }
+    // else {
+    //     $(window).on('load', function(){
+    //         init();
+    //     });
+    // }
 
 });

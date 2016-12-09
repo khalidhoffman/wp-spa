@@ -22,10 +22,9 @@ ngApp.directive('head', function () {
                     var $DOM = data.$DOM;
                     console.log("head.link()$scope.$on('view:update')");
                     var $head = $DOM.find('head'),
-                        $newStyles = data.new.$styles,
-                        $oldScripts = data.old.$scripts;
+                        $newStyles = data.new.$styles;
 
-                    $oldScripts.remove();
+                    // $oldScripts.remove();
 
                     // add new styles to incoming head
                     $head.append($newStyles);
