@@ -95,7 +95,7 @@ ngApp.directive('body', function () {
                             $activeContent.addClass('animate-page-out');
 
 
-                            $root.append($newContent);
+                            $root.prepend($newContent);
                             $newContent.one('animationend', function(){
                                 $newContent.removeClass('animate-page-in');
                             });

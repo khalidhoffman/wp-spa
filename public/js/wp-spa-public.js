@@ -373,6 +373,17 @@
 	                _$el.addClass('fixed-view').css({
 	                    height: _options.height
 	                });
+	            },
+	            clearConsole: function(){
+	                if (typeof console._commandLineAPI !== 'undefined') {
+	                    console.API = console._commandLineAPI; //chrome
+	                } else if (typeof console._inspectorCommandLineAPI !== 'undefined') {
+	                    console.API = console._inspectorCommandLineAPI; //Safari
+	                } else if (typeof console.clear !== 'undefined') {
+	                    console.API = console;
+	                }
+
+	                console.API.clear();
 	            }
 	        };
 
@@ -30782,6 +30793,7 @@
 
 	        $scope.$on('$locationChangeSuccess', function (event, to, from) {
 	            if (to == from) return;
+	            utils.clearConsole();
 	            console.log('route: %o', arguments);
 	            //var route = (to && to.pathParams && to.pathParams.route) ? to.pathParams.route : './';
 	            var route = utils.getPathFromUrl(to);
@@ -74065,7 +74077,7 @@
 	                            $activeContent.addClass('animate-page-out');
 
 
-	                            $root.append($newContent);
+	                            $root.prepend($newContent);
 	                            $newContent.one('animationend', function(){
 	                                $newContent.removeClass('animate-page-in');
 	                            });

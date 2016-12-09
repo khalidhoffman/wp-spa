@@ -19,6 +19,7 @@ ngApp.controller('mainController', [
 
         $scope.$on('$locationChangeSuccess', function (event, to, from) {
             if (to == from) return;
+            utils.clearConsole();
             console.log('route: %o', arguments);
             //var route = (to && to.pathParams && to.pathParams.route) ? to.pathParams.route : './';
             var route = utils.getPathFromUrl(to);
