@@ -15,7 +15,7 @@ define([
                 },
             pre = 'webkit',
             spaState = require('state');
-            domParser = new DOMParser();
+        domParser = new DOMParser();
 
 
         if (window.getComputedStyle) {
@@ -171,10 +171,10 @@ define([
             },
             /**
              *
-             * @param $el
+             * @param $target
              */
-            jumpTo: function ($el) {
-                var scrollTop = ($el.offset().top - $('header').height() + 2);
+            jumpTo: function ($target) {
+                var scrollTop = $target.offset ? ($target.offset().top - $('header').height() + 2) : $target;
                 $('html, body').scrollTop((scrollTop < 0) ? 0 : scrollTop); // +2 for good measure
             },
             getCurrentPath: function () {
@@ -261,7 +261,7 @@ define([
                     height: _options.height
                 });
             },
-            clearConsole: function(){
+            clearConsole: function () {
                 if (typeof console._commandLineAPI !== 'undefined') {
                     console.API = console._commandLineAPI; //chrome
                 } else if (typeof console._inspectorCommandLineAPI !== 'undefined') {
@@ -270,7 +270,7 @@ define([
                     console.API = console;
                 }
 
-                console.API.clear();
+                // console.API.clear();
             }
         };
 

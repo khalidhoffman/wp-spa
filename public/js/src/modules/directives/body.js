@@ -2,12 +2,15 @@ var _ = require('lodash'),
     $ = require('jquery'),
     url = require('url'),
     utils = require('utils'),
-    config = require('modules/services/config-loader'),
+    configLoader = require('modules/services/config-loader'),
     DiffDOM = require('diff-dom'),
     diffDOM = new DiffDOM(),
-    ngApp = require('ng-app');
+    ngApp = require('ng-app'),
+
+    config = {};
 
 console.log("require('modules/directives/body')");
+
 
 ngApp.directive('body', function () {
     return {
@@ -16,6 +19,10 @@ ngApp.directive('body', function () {
             '$scope', '$element', '$location', 'contentLoader', 'configLoader',
             function ($scope, $element, $location, contentLoader, configLoader) {
                 $scope.mainSelector = configLoader.getMainSelector();
+
+                configLoader.getConfig(function (err, configData) {
+                    config = configData;
+                });
 
                 function interceptAction(evt) {
                     console.log('ngBody.interceptAction()');
@@ -73,7 +80,7 @@ ngApp.directive('body', function () {
                                 $newContent = $body.find($scope.mainSelector),
                                 $newScripts = data.old.$scripts,
                                 $activeContent = $element.find($scope.mainSelector);
-                                // $loadedElements = $body.find("[data-spa-loaded='true']");
+                            // $loadedElements = $body.find("[data-spa-loaded='true']");
                             console.log('body.view:update - new $spaContent: %o', $newContent);
 
 
@@ -85,22 +92,33 @@ ngApp.directive('body', function () {
                             // $newScripts.appendTo($newContent);
                             // $loadedElements.remove();
 
+                            function showNew() {
+                                utils.jumpTo(0);
+                                $root.prepend($newContent);
+                                $newContent.one('animationend', function () {
+                                    $newContent.removeClass('animate-page-in');
+                                    $newContent.css({'animation-name': ''});
+                                    $newContent.css({'animation-duration': ''});
+                                });
+                            }
 
-                            $activeContent.one('animationend', function(){
+                            $activeContent.one('animationend', function () {
                                 $scope.cache[route] = $activeContent;
                                 $activeContent.detach();
                                 $activeContent.removeClass('animate-page-out');
+
+                                if (!config.asyncAnimation) showNew();
+
                                 $scope.setup();
                             });
                             $activeContent.addClass('animate-page-out');
 
 
-                            $root.prepend($newContent);
-                            $newContent.one('animationend', function(){
-                                $newContent.removeClass('animate-page-in');
-                            });
-
+                            if (config.animationName) $newContent.css({'animation-name': config.animationName});
+                            if (config.animationDuration) $newContent.css({'animation-duration': config.animationDuration});
                             $newContent.addClass('animate-page-in');
+                            if (config.asyncAnimation) showNew();
+
 
                         });
                     });

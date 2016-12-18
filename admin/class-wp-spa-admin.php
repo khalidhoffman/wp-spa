@@ -105,7 +105,10 @@ class Wp_Spa_Admin {
 
 	private function updateCachedSettings() {
 		$config = new WP_Spa_Config( array(
-			'mainSelector' => $this->get_option( 'mainSelector' ),
+			'animationName' => $this->get_option( 'animationName' ),
+            'animationDuration' => $this->get_option( 'animationDuration' ),
+            'asyncAnimation' => $this->get_option( 'asyncAnimation' ) == 1,
+            'mainSelector' => $this->get_option( 'mainSelector' ),
 			'siteURL'      => get_site_url(),
 			'useCache'     => $this->get_option( 'useCache' ) == 1
 		) );
@@ -321,7 +324,10 @@ class Wp_Spa_Admin {
 			$this->plugin_name
 		);
 
-		$this->add_setting( 'mainSelector', "Main Content Selector" );
+        $this->add_setting( 'asyncAnimation', "Animate transitions simultaneously" , 'checkbox', 'sanitize_checkbox' );
+		$this->add_setting( 'animationName', "Animation Name" );
+        $this->add_setting( 'animationDuration', "Animation Duration" );
+        $this->add_setting( 'mainSelector', "Main Content Selector" );
 		$this->add_setting( 'useCache', "Cache Pages", 'checkbox', 'sanitize_checkbox' );
 	}
 
