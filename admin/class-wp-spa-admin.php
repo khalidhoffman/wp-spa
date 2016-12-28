@@ -61,8 +61,8 @@ class Wp_Spa_Admin {
     public function __construct($plugin_name, $version) {
 
         $log = new Logger('wp_spa_admin_log');
-//		$log->pushHandler( new StreamHandler( dirname( __DIR__ . '/../../' ) . "/data/dev.log", Logger::INFO ) );
-        $log->pushHandler(new ChromePHPHandler(Logger::INFO));
+		$log->pushHandler( new StreamHandler( dirname( __DIR__ . '/../../' ) . "/data/dev.log", Logger::INFO ) );
+//        $log->pushHandler(new ChromePHPHandler(Logger::INFO));
         $this->logger = $log;
         $this->settings = array(
             array(
