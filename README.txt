@@ -1,5 +1,5 @@
 === WP-SPA ===
-Contributors: Khalid Hoffman
+Contributors: @khalidhoffman
 Donate link: khalidhoffman.solutions
 Tags: WordPress, SPA, Plugin
 Requires at least: 4.5.0
@@ -16,9 +16,11 @@ This Plugin converts a WordPress site to Single Page Application.
 
 
 == Installation ==
+1. Download zip and install via WordPress
 
+or
 
-1. Upload `wp-spa.php` to the `/wp-content/plugins/` directory
+1. clone repo into `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==
