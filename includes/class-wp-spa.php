@@ -200,11 +200,11 @@ class Wp_Spa {
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_options_page' );
 		$this->loader->add_action( 'admin_notices', $plugin_admin, 'print_messages' );
 
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-
-		$this->loader->add_action( 'updated_option', $plugin_admin, 'on_option_updated');
-
+        if ($_GET['page'] == 'wp-spa'){
+            $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+            $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+        }
+        $this->loader->add_action( 'updated_option', $plugin_admin, 'on_option_updated');
 	}
 
 	/**
