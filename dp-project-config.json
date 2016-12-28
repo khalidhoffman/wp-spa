@@ -22,23 +22,17 @@
       "output": "admin/partials/"
     },
     {
-      "name" : "jade",
-      "input": "public/jade/",
-      "output": "public/partials/"
-    },
-    {
       "name" : "js",
       "input": "js/src/",
       "ignore" : ["**/node_modules/**", "**/vendors/**"]
     },
     {
-      "name" : "js-config",
-      "input": "js/src/pages/",
-      "output": "js/src/modules/"
+      "name" : "js-webpack",
+      "input": "public/js/src/webpack.config.js"
     },
     {
       "name" : "js-webpack",
-      "input": "webpack.config.js"
+      "input": "admin/js/src/webpack.config.js"
     },
     {
       "name" : "jsx",
@@ -46,7 +40,7 @@
       "ignore" : ["**/node_modules/**", "**/vendors/**"]
     },
     {
-      "name" : "stylus",
+      "name" : "stylus-bem",
       "input": "admin/stylus/",
       "output": "admin/css/"
     },

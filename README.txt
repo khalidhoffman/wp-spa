@@ -1,5 +1,5 @@
 === WP-SPA ===
-Contributors: (this should be a list of wordpress.org userid's)
+Contributors: Khalid Hoffman
 Donate link: khalidhoffman.solutions
 Tags: WordPress, SPA, Plugin
 Requires at least: 4.5.0
@@ -13,12 +13,6 @@ Here is a short description of the plugin.  This should be no more than 150 char
 == Description ==
 
 This Plugin converts a WordPress site to Single Page Application.
-
-Overview:
-
-*   The plugin could use a virtual dom to determine listeners
-*   The plugin could move all scripts to one section and remove as necessary (less efficient)
-*   The plugin could take a screenshot and load a complete new DOM
 
 
 == Installation ==
@@ -35,7 +29,7 @@ Yes, hopefully.
 
 = What libraries does this use? =
 
-TBD.
+Angular bundled with webpack.
 
 == Screenshots ==
 

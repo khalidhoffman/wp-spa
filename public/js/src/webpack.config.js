@@ -3,31 +3,14 @@ var path = require('path'),
     fs = require('fs'),
 
 
-    wpConfig = (function () {
-        var config = {
-            domain: '127.0.0.1',
-            path: '/'
-        };
-        try {
-            var localConfigStr = fs.readFileSync(path.resolve(__dirname, 'data/wp-spa.config.json')),
-                localConfig = JSON.parse(localConfigStr),
-                siteURLMeta = url.parse(localConfig.siteURL);
-            config.domain = siteURLMeta.host;
-            config.path = siteURLMeta.pathname;
-        } catch (err) {
-            console.warn(err);
-        }
-        return config;
-    })(),
     webpack = require('webpack'),
     ModuleReplace = webpack.NormalModuleReplacementPlugin;
 
 module.exports = {
     entry: "app.js",
-    context: path.resolve(__dirname, 'public/js/src/'),
+    context: __dirname,
     output: {
-        path: './public/js/',
-        publicPath: wpConfig.path,
+        path: path.join(process.cwd(), 'public/js/'),
         filename: "wp-spa-public.js"
     },
     module: {
@@ -43,7 +26,7 @@ module.exports = {
         ]
     },
     resolve: {
-        root: path.resolve(__dirname, 'public/js/src/'),
+        root: __dirname,
         modulesDirectories: ['./', path.join(process.cwd(), 'node_modules')],
         extensions: ['', '.js'],
         alias: {
@@ -70,6 +53,18 @@ module.exports = {
         }
     },
     plugins: [
+        new webpack.optimize.UglifyJsPlugin({
+            compress : {
+                drop_console : true,
+                drop_debugger : true
+            }
+        }),
+
+        new webpack.ProvidePlugin({
+            $: "jquery",
+            jQuery: "jquery",
+            "window.jQuery": "jquery"
+        }),
         // Hack for requirejs's domReady plugin
         new ModuleReplace(/^(domReady\!)$/, 'modules/null-module'),
 

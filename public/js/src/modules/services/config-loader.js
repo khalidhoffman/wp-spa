@@ -11,7 +11,7 @@ ngApp.service('configLoader', [
         var self = this;
         this._data = {};
         this.dataPath = '/wp-content/plugins/wp-spa/data/wp-spa.config.json';
-        this.baseURL = $("meta[name='wp-spa-base-url']").attr('content');
+        this.baseURL = $("base").attr('href');
         this.localConfigURL = this.baseURL + this.dataPath;
 
         this.getMainSelector = function () {

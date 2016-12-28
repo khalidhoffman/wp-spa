@@ -11,16 +11,19 @@ include _auto-generated/_-all
     * @package    Wp_Spa
     * @subpackage Wp_Spa/admin/partials
     */
-.heading
-    h1.heading_content!=echo("esc_html(get_admin_page_title());")
-.settings
-    .setting__content
-        .setting-section.setting-section--actions
-            a.button.button-primary.button--update(href="?page=wp-spa&action=update") Update WP-SPA
-        .setting-section.setting-section--vars
-            .setting-section__content
-                form.setting-form(action="options.php" method="post")
-                    :php
-                        settings_fields($this->plugin_name);
-                        do_settings_sections($this->plugin_name);
-                        submit_button();
+#wp-spa
+    .heading
+        h1.heading_content!=echo("esc_html(get_admin_page_title());")
+    .settings
+        .setting__content
+            .setting-section.setting-section--actions
+                a.button.button-primary.button--update(href="?page=wp-spa&action=update") Update WP-SPA
+                br
+                a.button.button-primary.button--clear(href="?page=wp-spa&action=clear") Clear WP-SPA messages
+            .setting-section.setting-section--vars
+                .setting-section__content
+                    form.setting-form(action="options.php" method="post")
+                        :php
+                            settings_fields($this->plugin_name);
+                            do_settings_sections($this->plugin_name);
+                            submit_button();

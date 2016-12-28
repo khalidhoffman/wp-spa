@@ -203,6 +203,8 @@ class Wp_Spa {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 
+		$this->loader->add_action( 'updated_option', $plugin_admin, 'on_option_updated');
+
 	}
 
 	/**
@@ -220,8 +222,6 @@ class Wp_Spa {
 			$this->loader->add_filter( 'final_output', $plugin_public,'on_final_output', 0);
 			$this->loader->add_filter( 'template_include', $plugin_public, 'set_current_theme_template', 1000 );
 			$this->loader->add_action( 'shutdown', $plugin_public,'on_shutdown', 0);
-			$this->loader->add_action( 'wp_footer', $plugin_public, 'wp_spa_footer_meta' );
-			$this->loader->add_action( 'wp_head', $plugin_public, 'wp_spa_head_meta' );
 		}
 
 		$this->loader->add_action( 'wp_head', $plugin_public, 'on_wp_head' );
