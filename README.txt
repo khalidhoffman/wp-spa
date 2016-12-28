@@ -8,11 +8,11 @@ Stable tag: 4.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Here is a short description of the plugin.  This should be no more than 150 characters.  No markup here.
+Enables animations between page transitions.
 
 == Description ==
 
-This Plugin converts a WordPress site to Single Page Application.
+This Plugin enables a WordPress site to render animations between page transitions.
 
 
 == Installation ==
@@ -33,12 +33,10 @@ Yes, hopefully.
 
 Angular bundled with webpack.
 
-== Screenshots ==
-
-1. 'http://placehold.it/1920x1080'
-2. 'http://placehold.it/720x480'
-
 == Changelog ==
+
+= 1.2 =
+* Enables greater control of animations
 
 = 1.0 =
 * First release
