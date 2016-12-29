@@ -1,6 +1,6 @@
 <?php
 require_once ('vendor/autoload.php');
-require('includes/utils.php');
+require('includes/class-wp-spa-utils.php');
 /**
  * The plugin bootstrap file
  *

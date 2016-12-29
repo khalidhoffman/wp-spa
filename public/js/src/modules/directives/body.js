@@ -20,7 +20,7 @@ ngApp.directive('body', function () {
                 var $window = angular.element(window);
                 $scope.mainSelector = configLoader.getMainSelector();
 
-                configLoader.getConfig(function (err, configData) {
+                configLoader.fetchConfig(function (err, configData) {
                     config = configData;
                 });
 
@@ -49,7 +49,7 @@ ngApp.directive('body', function () {
                 };
 
                 $scope.createClickOverrides = function () {
-                    $scope.clickables = $element.find('[href]').not('[data-spa-initizlied]');
+                    $scope.clickables = $element.find('[href]').not('[data-spa-initialized]');
                     $scope.clickables.on('click', interceptAction);
                     $scope.clickables.prop('data-spa-initialized', true);
                 };
@@ -68,7 +68,7 @@ ngApp.directive('body', function () {
                 $scope.cache = {};
 
                 function init() {
-                    configLoader.getConfig(function (configData) {
+                    configLoader.fetchConfig(function (configData) {
                         $scope.setupNewView();
 
                         $scope.$on('head:update', function (event, data) {

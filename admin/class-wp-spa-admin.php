@@ -1,8 +1,7 @@
 <?php
-require_once dirname(__FILE__) . '/../includes/class-wp-spa-config.php';
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use Monolog\Handler\ChromePHPHandler;
+require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wp-spa-config.php';
+require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wp-spa-message-handler.php';
+require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wp-spa-utils.php';
 
 /**
  * The admin-specific functionality of the plugin.
@@ -24,7 +23,7 @@ use Monolog\Handler\ChromePHPHandler;
  * @subpackage Wp_Spa/admin
  * @author     Khalid Hoffman <khalidhoffman@gmail.com>
  */
-class Wp_Spa_Admin {
+class Wp_Spa_Admin extends WP_SPA_Message_Handler {
 
     /**
      * The ID of this plugin.
@@ -38,8 +37,6 @@ class Wp_Spa_Admin {
     private $option_namespace = 'wp_spa';
     private $plugin_text_namespace = 'wp_spa';
     private $main_settings_option_name = 'general';
-    private $messages_queue_namespace = 'wp_spa_messages';
-    private $message_queue = array();
 
     /**
      * The version of this plugin.
@@ -50,6 +47,47 @@ class Wp_Spa_Admin {
      */
     private $version;
 
+    private $utils;
+    private $settings = array(
+        array(
+            'name' => 'asyncAnimation',
+            'label' => "Animate transitions simultaneously",
+            'type' => 'checkbox',
+            'callback' => 'sanitize_checkbox'
+        ),
+        array(
+            'name' => 'useCache',
+            'label' => "Cache Pages",
+            'type' => 'checkbox',
+            'callback' => 'sanitize_checkbox'
+        ),
+        array(
+            'name' => 'animationInName',
+            'label' => "Animation Name (In)",
+            'type' => 'select'
+        ),
+        array(
+            'name' => 'animationOutName',
+            'label' => "Animation Name (Out)",
+            'type' => 'select'
+        ),
+        array(
+            'name' => 'animationInDuration',
+            'label' => "Animation Duration (In)",
+            'type' => 'number'
+        ),
+        array(
+            'name' => 'animationOutDuration',
+            'label' => "Animation Duration (Out)",
+            'type' => 'number'
+        ),
+        array(
+            'name' => 'siteURL',
+            'type' => 'hidden',
+            'callback' => 'sanitize_site_url'
+        )
+    );
+
     /**
      * Initialize the class and set its properties.
      *
@@ -59,192 +97,13 @@ class Wp_Spa_Admin {
      * @param      string $version The version of this plugin.
      */
     public function __construct($plugin_name, $version) {
-
+        parent::__construct();
         show_admin_bar(false);
-        $log = new Logger('wp_spa_admin_log');
-		$log->pushHandler( new StreamHandler( dirname( __DIR__ . '/../../' ) . "/data/dev.log", Logger::INFO ) );
-//        $log->pushHandler(new ChromePHPHandler(Logger::INFO));
-        $this->logger = $log;
-        $this->settings = array(
-            array(
-                'name' => 'asyncAnimation',
-                'label' => "Animate transitions simultaneously",
-                'type' => 'checkbox',
-                'callback' => 'sanitize_checkbox'
-            ),
-            array(
-                'name' => 'useCache',
-                'label' => "Cache Pages",
-                'type' => 'checkbox',
-                'callback' => 'sanitize_checkbox'
-            ),
-            array(
-                'name' => 'animationInName',
-                'label' => "Animation Name (In)",
-                'type' => 'select'
-            ),
-            array(
-                'name' => 'animationOutName',
-                'label' => "Animation Name (Out)",
-                'type' => 'select'
-            ),
-            array(
-                'name' => 'animationInDuration',
-                'label' => "Animation Duration (In)",
-                'type' => 'number'
-            ),
-            array(
-                'name' => 'animationOutDuration',
-                'label' => "Animation Duration (Out)",
-                'type' => 'number'
-            ),
-            array(
-                'name' => 'siteURL',
-                'type' => 'hidden',
-                'callback' => 'sanitize_site_url'
-            )
-        );
+        $this->utils = new Wp_Spa_Utils();
 
         $this->plugin_name = $plugin_name;
         $this->version = $version;
         $this->perform_actions();
-    }
-
-    private function perform_actions() {
-        if (isset($_GET['page']) && $_GET['page'] == 'wp-spa') {
-            if (isset($_GET['action'])) {
-                $action = $_GET['action'];
-                switch ($action) {
-                    case 'clear':
-                        $this->clearMessages();
-                        break;
-                    case 'update':
-                        $this->updateCachedSettings(array('renderMessages' => true));
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    }
-
-    private function onActionsComplete() {
-        $this->logger->addInfo('clearing messages');
-        $current_url = $_SERVER["REQUEST_URI"];
-        $current_url_meta = parse_url($current_url);
-
-        $url_query_params = array();
-        parse_str($current_url_meta['query'], $url_query_params);
-        unset($url_query_params['action']);
-        $updated_query_params_str = http_build_query($url_query_params);
-        $updated_url = $current_url_meta['path'] . '?' . $updated_query_params_str;
-        header("Location: " . $updated_url);
-        $this->logger->addInfo('current_url_meta', $current_url_meta);
-    }
-
-    private function get_option($option_name) {
-        return get_option('wp_spa_' . $option_name);
-    }
-
-    private function updateCachedSettings($options = array()) {
-        $config_data = array();
-        foreach ($this->settings as $setting) {
-            $config_data[$setting['name']] = $this->get_option($setting['name']);
-        };
-        $config = new WP_Spa_Config($config_data);
-        $config->save();
-        if ($options['renderMessages'] == true) {
-            $this->queue_message('WP-SPA updated');
-        }
-    }
-
-    private function clearMessages() {
-        $this->save_messages([]);
-    }
-
-    private function queue_message($message, $type = 'info') {
-        $message_queue = array();
-        $message_queue_content = get_option($this->messages_queue_namespace);
-        $this->logger->addInfo("queue_message - content", array($message_queue_content));
-        if (null !== $message_queue) {
-            $message_queue = json_decode($message_queue_content);
-            if (!is_array($message_queue)) {
-                $message_queue = array();
-            }
-        }
-        array_push($message_queue, array(
-            'text' => $message,
-            'type' => $type
-        ));
-        $this->message_queue = $message_queue;
-        $this->save_messages();
-    }
-
-    private function save_messages($messages = null) {
-        if (is_array($messages)) {
-            update_option($this->messages_queue_namespace, json_encode($messages));
-            $this->message_queue = $messages;
-        } else {
-            update_option($this->messages_queue_namespace, json_encode($this->message_queue));
-        }
-        $this->logger->addInfo('save_messages', $this->message_queue);
-    }
-
-    private function render_message($message_meta) {
-        switch ($message_meta['type']) {
-            case 'info':
-            case 'error':
-            case 'warning':
-            case 'success':
-                $class_name = 'notice-' . $message_meta['type'];
-                break;
-            default:
-                $class_name = 'notice-info';
-                break;
-        }
-
-        return sprintf("<div class='notice %s is-dismissible'><p>%s</p></div>", $class_name, _($message_meta['text']));
-    }
-
-    public function get_messages() {
-        $messages_queue = get_option($this->messages_queue_namespace);
-        $this->message_queue = json_decode($messages_queue);
-
-        return (array)$this->message_queue;
-    }
-
-
-    private function is_within_wpspa_scope() {
-        return isset($_GET['page']) && $_GET['page'] == 'wp-spa';
-    }
-
-    public function print_messages() {
-        if ($this->is_within_wpspa_scope()) {
-            $messages = $this->get_messages();
-            $message_count = 0;
-            $limit = 100;
-
-            if (isset($_GET['action'])) {
-                $this->onActionsComplete();
-            } else {
-                while (sizeof($messages) > 0 && $message_count < $limit) {
-                    $message_meta = (array)array_pop($messages);
-                    switch ($message_meta['type']) {
-                        case 'info':
-                        case 'warning':
-                        case 'error':
-                        case 'success':
-                            echo $this->render_message($message_meta);
-                            break;
-                        default:
-                            break;
-                    }
-                    $message_count++;
-                }
-            }
-
-            $this->save_messages($messages);
-        }
     }
 
     /**
@@ -294,6 +153,29 @@ class Wp_Spa_Admin {
     }
 
     /**
+     * Render the options page for plugin
+     *
+     * @since  1.0.0
+     */
+    public function display_options_page() {
+        include_once 'partials/wp-spa-admin-display.php';
+    }
+
+
+    private function generate_option_namespace_suffix($option_name) {
+        return '_' . $option_name;
+    }
+
+    /**
+     * Render the text for the general section
+     *
+     * @since  1.0.0
+     */
+    public function options_heading() {
+        include_once 'partials/wp-spa-admin-display-heading.php';
+    }
+
+    /**
      * Add an options page under the Settings submenu
      *
      * @since  1.0.0
@@ -310,29 +192,9 @@ class Wp_Spa_Admin {
 
     }
 
-    /**
-     * Render the options page for plugin
-     *
-     * @since  1.0.0
-     */
-    public function display_options_page() {
-        include_once 'partials/wp-spa-admin-display.php';
+    private function get_option($option_name) {
+        return get_option('wp_spa_' . $option_name);
     }
-
-    /**
-     * Render the text for the general section
-     *
-     * @since  1.0.0
-     */
-    public function options_heading() {
-        include_once 'partials/wp-spa-admin-display-heading.php';
-    }
-
-
-    private function generate_option_namespace_suffix($option_name) {
-        return '_' . $option_name;
-    }
-
 
     private function add_setting($option_name, $label = "New Option", $type = 'text', $callback = false) {
 
@@ -382,7 +244,11 @@ class Wp_Spa_Admin {
         );
 
         foreach ($this->settings as $setting) {
-            $this->add_setting($setting['name'], $setting['label'], $setting['type'], $setting['callback']);
+            $name = isset($setting['name']) ? $setting['name'] : null;
+            $label = isset($setting['label']) ? $setting['label'] : null;
+            $type = isset($setting['type']) ? $setting['type'] : null;
+            $callback = isset($setting['callback']) ? $setting['callback'] : null;
+            $this->add_setting($name, $label, $type, $callback);
         }
     }
 
@@ -420,18 +286,41 @@ class Wp_Spa_Admin {
         return (isset($val)) ? 1 : 0;
     }
 
-    public function sanitize_site_url(){
+    public function sanitize_site_url() {
         return get_site_url();
     }
 
-    public function wp_spa_show_json_sitemap() {
-        if (isset($_GET['show_json_sitemap'])) {
-            die(json_encode(get_json_sitemap()));
+    public function on_option_updated() {
+        $this->update_data_json();
+    }
+
+
+    private function perform_actions() {
+        if (isset($_GET['page']) && $_GET['page'] == 'wp-spa') {
+            if (isset($_GET['action'])) {
+                $action = $_GET['action'];
+                switch ($action) {
+                    case 'clear':
+                        $this->clear_messages();
+                        break;
+                    case 'update':
+                        $this->update_data_json();
+                        $this->queue_message('WP-SPA updated');
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 
-    public function on_option_updated() {
-        $this->updateCachedSettings();
+    private function update_data_json() {
+        $config_data = array();
+        foreach ($this->settings as $setting) {
+            $config_data[$setting['name']] = $this->get_option($setting['name']);
+        };
+        $config = new WP_Spa_Config($config_data);
+        $config->save();
     }
 
 }

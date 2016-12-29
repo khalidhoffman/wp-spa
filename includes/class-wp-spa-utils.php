@@ -1,11 +1,27 @@
 <?php
-if(!function_exists('get_current_template')) {
+require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wp-spa-utils.php';
+
+class Wp_Spa_Utils {
+
+    function __construct() {
+        if (!function_exists('get_current_template')) {
+            function get_current_template($echo) {
+                return $this->get_current_template($echo);
+            }
+        }
+
+        if (!function_exists('get_json_sitemap')) {
+            function get_json_sitemap() {
+                return $this->get_json_sitemap();
+            }
+        }
+    }
 
     /**
      * @param bool|false $echo
      * @return bool
      */
-    function get_current_template($echo = false) {
+    public function get_current_template($echo = false) {
         if (!isset($GLOBALS['current_theme_template'])) {
             return false;
         }
@@ -15,9 +31,10 @@ if(!function_exists('get_current_template')) {
             return $GLOBALS['current_theme_template'];
         }
     }
-}
 
-if(!function_exists('get_json_sitemap')){
+    public function get_json_config() {
+        return get_option(WP_Spa_Config::$option_namespace);
+    }
 
     function get_json_sitemap() {
         //set up an array for all the URLs
@@ -41,21 +58,4 @@ if(!function_exists('get_json_sitemap')){
         }
         return $urls;
     }
-}
-
-if(!function_exists('generate_json_config')){
-	function generate_json_config(){
-		$config = array(
-			'siteURL' => get_site_url(),
-			'useCache' => (null !== get_option('wp_spa_isCached') && get_option('wp_spa_isCached') == 1) ? true : false
-		);
-                $data_dir = dirname(__DIR__ . '../') . '/data/';
-                if(!file_exists($data_dir)) {
-                    mkdir($data_dir);
-                }
-		$location = $data_dir . 'wp-spa.config.json';
-		$fp = fopen($location, 'w');
-		fwrite($fp, json_encode($config));
-		fclose($fp);
-	}
 }

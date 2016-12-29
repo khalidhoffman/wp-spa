@@ -8,43 +8,59 @@ console.log("require('content-service')");
 ngApp.service('configLoader', [
     '$http',
     function ($http) {
-        var self = this;
-        this._data = {};
-        this.dataPath = '/wp-content/plugins/wp-spa/data/wp-spa.config.json';
-        this.baseURL = $("base").attr('href');
-        this.localConfigURL = this.baseURL + this.dataPath;
+        var self = this,
+            defaults = {
+                animationInName: 'fadeIn',
+                animationOutName: 'fadeOut',
+                animationInDuration: '400ms',
+                animationOutDuration: '400ms',
+                useCache: 1,
+                asyncAnimation: 1
+            };
+        this._state = {
+            hasLoaded: false
+        };
+
+        // use defaults for now
+        this._data = _.defaults({}, defaults);
+
+        this.configURL = utils.getRootUrl() + '?wp_spa_config';
 
         this.getMainSelector = function () {
             return '.spa-content__content';
         };
 
-        this.getConfig = function(callback, options){
-            if (this._data.mainSelector){
-                if (callback) callback(null, this._data);
-            } else {
-                this.fetchConfig(callback);
-            }
+        this.getDefaults = function () {
+            return defaults;
         };
 
         /**
          *
          * @param {Function} [callback]
          * @param {Object} [options]
+         * @param {Boolean} [options.forceUpdate]
          */
-        this.fetchConfig = function(callback, options){
-            $http.get(this.localConfigURL).then(
-                function success(result) {
-                    self._data = result.data;
-                    console.log('response: %o', result);
-                    if (callback) callback(null, self._data);
-                },
-                function failure() {
-                    console.error('response: %o', result);
-                    if (callback) callback(new Error("Could not fetch config"), result);
-                });
+        this.fetchConfig = function (callback, options) {
+            var self = this,
+                opts = _.defaults(options, {});
+            if (self._state.hasLoaded && !opts.forceUpdate) {
+                if (callback) callback(null, this._data);
+            } else {
+                $http.get(this.configURL, {responseType: 'json'}).then(
+                    function success(response) {
+                        self._data = response.data;
+                        console.log('config response: %o', response);
+                        self._state.hasLoaded = true;
+                        if (callback) callback(null, self._data);
+                    },
+                    function failure(response) {
+                        console.error('response: %o', response);
+                        if (callback) callback(new Error("Could not fetch config"), response);
+                    });
+            }
         };
 
-        function init(){
+        function init() {
             self.fetchConfig();
         }
 

@@ -1,7 +1,5 @@
 <?php
-use PHPHtmlParser\Dom;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
+require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wp-spa-request-handler.php';
 
 /**
  * The public-facing functionality of the plugin.
@@ -23,7 +21,7 @@ use Monolog\Handler\StreamHandler;
  * @subpackage Wp_Spa/public
  * @author     Khalid Hoffman <khalidhoffman@gmail.com>
  */
-class Wp_Spa_Public {
+class Wp_Spa_Public extends WP_SPA_Request_Handler {
 
     /**
      * The ID of this plugin.
@@ -43,6 +41,7 @@ class Wp_Spa_Public {
      */
     private $version;
 
+
     /**
      * Initialize the class and set its properties.
      *
@@ -51,20 +50,10 @@ class Wp_Spa_Public {
      * @param      string $version The version of this plugin.
      */
     public function __construct($plugin_name, $version) {
-
-
-        $log = new Logger('wp_spa_log');
-        $log->pushHandler(new StreamHandler(dirname(__DIR__ . '/../../') . "/data/dev.log", Logger::INFO));
-        $this->logger = $log;
+        parent::__construct();
         $this->plugin_name = $plugin_name;
         $this->version = $version;
 
-    }
-
-    public function wp_spa_show_json_sitemap() {
-        if (isset($_GET['show_json_sitemap'])) {
-            die(json_encode(get_json_sitemap()));
-        }
     }
 
     public function set_current_theme_template($template_file) {
@@ -114,14 +103,8 @@ class Wp_Spa_Public {
          * class.
          */
 
-        wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/wp-spa-public.js', array(), $this->version, false);
+        wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/wp-spa-public.js', array(), $this->version, true);
 
-    }
-
-    public function handle_request() {
-        error_log("making request to {$_POST['endpoint']} with {$_POST['data']}");
-        $response = $this->get_request_result($_POST['endpoint'], $_POST['data'], $_POST['method']);
-        die('success');
     }
 
     public function on_wp_head() {
@@ -154,7 +137,7 @@ class Wp_Spa_Public {
     }
 
     public function on_final_output($html) {
-        $template_name = get_current_template();
+        $template_name = $this->utils->get_current_template();
         // add attrs and wrapper elements to opening body tag
         $html = preg_replace("/(<\s*html[^>]*)>/", "$1 ng-app='dp-spa'>", $html);
 

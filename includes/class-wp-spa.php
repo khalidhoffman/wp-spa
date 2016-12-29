@@ -71,50 +71,6 @@ class Wp_Spa {
 		$this->plugin_name = 'wp-spa';
 		$this->version = '1.0.0';
 
-		if(!function_exists('get_current_template')) {
-
-			/**
-			 * @param bool|false $echo
-			 * @return bool
-			 */
-			function get_current_template($echo = false) {
-				if (!isset($GLOBALS['current_theme_template'])) {
-					return false;
-				}
-				if ($echo) {
-					echo $GLOBALS['current_theme_template'];
-				} else {
-					return $GLOBALS['current_theme_template'];
-				}
-			}
-		}
-
-		if(!function_exists('get_json_sitemap')){
-
-			function get_json_sitemap() {
-				//set up an array for all the URLs
-				$urls = array();
-
-				//get all the pages, posts (including CPTs)
-				$post_query = new WP_Query(array(
-					'post_type' => 'any',
-					'posts_per_page' => '-1',
-					'post_status' => 'publish'
-				));
-
-				while ($post_query->have_posts()) {
-					$post_query->the_post();
-					global $post;
-					$post_type = $post->post_type;
-					if (!(isset($urls[$post_type]) && is_array($urls[$post_type]))) {
-						$urls[$post_type] = array();
-					}
-					array_push($urls[$post_type], get_permalink());
-				}
-				return $urls;
-			}
-		}
-
 		$this->load_dependencies();
 		$this->set_locale();
         ob_start();
@@ -200,7 +156,7 @@ class Wp_Spa {
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_options_page' );
 		$this->loader->add_action( 'admin_notices', $plugin_admin, 'print_messages' );
 
-        if ($_GET['page'] == 'wp-spa'){
+        if (isset($_GET['page']) && $_GET['page'] == 'wp-spa'){
             $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
             $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
         }
@@ -225,9 +181,9 @@ class Wp_Spa {
 		}
 
 		$this->loader->add_action( 'wp_head', $plugin_public, 'on_wp_head' );
-		$this->loader->add_action( 'wp_ajax_nopriv_wp_spa', $plugin_public, 'handle_request' );
-		$this->loader->add_action( 'wp_ajax_wp_spa', $plugin_public, 'handle_request' );
-		$this->loader->add_action( 'template_redirect', $plugin_public, 'wp_spa_show_json_sitemap' );
+		$this->loader->add_action( 'wp_ajax_nopriv_wp_spa', $plugin_public, 'on_ajax_post' );
+		$this->loader->add_action( 'wp_ajax_wp_spa', $plugin_public, 'on_ajax_post' );
+		$this->loader->add_action( 'template_redirect', $plugin_public, 'on_ajax_get' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts', 9999 );
 
