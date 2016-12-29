@@ -60,6 +60,7 @@ class Wp_Spa_Admin {
      */
     public function __construct($plugin_name, $version) {
 
+        show_admin_bar(false);
         $log = new Logger('wp_spa_admin_log');
 		$log->pushHandler( new StreamHandler( dirname( __DIR__ . '/../../' ) . "/data/dev.log", Logger::INFO ) );
 //        $log->pushHandler(new ChromePHPHandler(Logger::INFO));
