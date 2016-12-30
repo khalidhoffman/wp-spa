@@ -31,8 +31,6 @@ class Wp_Spa_Activator {
 	 */
 	public static function activate() {
 
-		generate_json_config();
-
 	}
 
 }

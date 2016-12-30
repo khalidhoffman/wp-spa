@@ -1,6 +1,6 @@
 {
   "name": "wp-spa",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Converts a WordPress site to a SPA",
   "main": "index.php",
   "scripts": {
