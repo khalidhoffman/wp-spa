@@ -21,8 +21,10 @@ ngApp.service('configLoader', [
             hasLoaded: false
         };
 
+        this._defaults = _.defaults({}, defaults);
+
         // use defaults for now
-        this._data = _.defaults({}, defaults);
+        this._data = this._defaults;
 
         this.configURL = utils.getRootUrl() + '?wp_spa_config';
 
@@ -51,7 +53,12 @@ ngApp.service('configLoader', [
                         self._data = response.data;
                         console.log('config response: %o', response);
                         self._state.hasLoaded = true;
-                        if (callback) callback(null, self._data);
+                        // hotfix to check for valid config
+                        if (self._data.animationInName) {
+                            if (callback) callback(null, self._data);
+                        } else {
+                            if (callback) callback(null, self._defaults);
+                        }
                     },
                     function failure(response) {
                         console.error('response: %o', response);
