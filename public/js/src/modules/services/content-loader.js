@@ -15,7 +15,7 @@ ngApp.service('contentLoader', ['$http', 'configLoader',
         configLoader.fetchConfig(function (err, configData) {
             if (err) {
                 console.error (err)
-            } else {
+            } else if (configData) {
                 config = configData;
             }
         });
