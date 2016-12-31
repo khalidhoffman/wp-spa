@@ -17,7 +17,7 @@ class WP_SPA_Loggable {
         $this->save_messages([]);
     }
 
-    private function queue_message($message, $type = 'info') {
+    public function queue_message($message, $type = 'info') {
         $message_queue = array();
         $message_queue_content = get_option($this->messages_queue_namespace);
         $this->logger->addInfo("queue_message - content", array($message_queue_content));
