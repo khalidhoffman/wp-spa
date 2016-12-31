@@ -5,9 +5,8 @@ var _ = require('lodash'),
     configLoader = require('modules/services/config-loader'),
     DiffDOM = require('diff-dom'),
     diffDOM = new DiffDOM(),
-    ngApp = require('ng-app'),
+    ngApp = require('ng-app');
 
-    config = {};
 
 console.log("require('modules/directives/body')");
 
@@ -17,11 +16,12 @@ ngApp.directive('body', function () {
         controller: [
             '$scope', '$element', '$location', 'contentLoader', 'configLoader',
             function ($scope, $element, $location, contentLoader, configLoader) {
-                var $window = angular.element(window);
+                var $window = angular.element(window),
+                    config = configLoader.getDefaults()
                 $scope.mainSelector = configLoader.getMainSelector();
 
                 configLoader.fetchConfig(function (err, configData) {
-                    config = configData;
+                    config = configData || config;
                 });
 
                 function interceptAction(evt) {
