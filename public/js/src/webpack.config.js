@@ -41,8 +41,10 @@ module.exports = {
             "null-module": "modules/null-module",
             "utils": "modules/utils",
 
+            // overrides
             "jquery": "vendors/jquery-wp",
             "backbone": "vendors/backbone-wp",
+
             "live": "vendors/live",
             "moment": "vendors/moment/moment",
             "underscore": "lodash"
@@ -65,18 +67,6 @@ module.exports = {
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"
-        }),
-        // Hack for requirejs's domReady plugin
-        new ModuleReplace(/^(domReady\!)$/, 'modules/null-module'),
-
-        // Hack for requirejs's text plugin
-        new ModuleReplace(/^text!.+$/, function (ctx) {
-            ctx.request = ctx.request.replace(/text!/, 'raw!');
-        }),
-
-        // Hack for requirejs's css plugin
-        new ModuleReplace(/^css!.+$/, function (ctx) {
-            ctx.request = 'style!' + ctx.request;
         })
     ],
     node: {

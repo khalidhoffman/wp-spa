@@ -1,0 +1,26 @@
+@keyframes pulse
+  0%
+    transform scale(1)
+  100%
+    transform scale(1.25)
+.wp-spa-loading-view
+  fixed: 0 0 0 0
+  //background-color transparentify($color-black, 50%)
+  height: 100vh;
+  text-align center
+  width 100%
+  display none
+  &/--loading
+    display: table
+  /__icon
+    display table-cell
+    vertical-align middle
+    &:before
+      content: ''
+      display block
+      background-color: transparentify($color-grey, 50%);
+      border-radius 50%
+      size: 3em
+      margin 0 auto
+      animation pulse $duration-transition-default-ms $timing-transition-default alternate infinite
+

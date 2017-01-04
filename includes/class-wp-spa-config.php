@@ -7,7 +7,7 @@ class WP_Spa_Config {
         array(
             'name' => 'asyncAnimation',
             'label' => "Animate transitions simultaneously",
-            'description' => 'For debugging',
+            'description' => 'animate page entry at the same time as page exit',
             'type' => 'checkbox',
             'callback' => 'sanitize_checkbox_value',
             'default' => 1
@@ -16,6 +16,14 @@ class WP_Spa_Config {
             'name' => 'useCache',
             'label' => "Cache Pages",
             'description' => 'For debugging',
+            'type' => 'checkbox',
+            'callback' => 'sanitize_checkbox_value',
+            'default' => 1
+        ),
+        array(
+            'name' => 'showLoadingScreen',
+            'label' => "Loading screen",
+            'description' => 'Show loading screen between animations',
             'type' => 'checkbox',
             'callback' => 'sanitize_checkbox_value',
             'default' => 1

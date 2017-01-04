@@ -17,6 +17,8 @@ ngApp.directive('body', function () {
                 var $window = angular.element(window),
                     config = configLoader.getDefaults();
                 $scope.mainSelector = configLoader.getMainSelector();
+                $scope.$loadingView = $(require("raw!./html/loading-view.html"));
+                $scope.loadingClassName = 'wp-spa-loading-view--loading';
 
                 $scope.flags = {};
 
@@ -42,8 +44,9 @@ ngApp.directive('body', function () {
                     }
                 }
 
-                $scope.updateFlags = function(){
+                $scope.updateFlags = function () {
                     $scope.flags.asyncAnimation = parseInt(config.asyncAnimation) == 1;
+                    $scope.flags.showLoadingScreen = parseInt(config.showLoadingScreen) == 1;
                 };
 
                 $scope.destroyClickOverrides = function () {
@@ -68,7 +71,19 @@ ngApp.directive('body', function () {
                     $scope.sanitize();
                 };
 
-                $scope.addView = function($view, $root, options, callback) {
+                $scope.showLoading = function () {
+                    if ($scope.flags.showLoadingScreen) {
+                        $scope.$loadingView.addClass($scope.loadingClassName);
+                    }
+                };
+
+                $scope.hideLoading = function () {
+                    if ($scope.flags.showLoadingScreen) {
+                        $scope.$loadingView.removeClass($scope.loadingClassName);
+                    }
+                };
+
+                $scope.addView = function ($view, $root, callback) {
                     $view.one('animationend', function () {
                         $timeout(function () {
                             $view.removeClass('animate-page-in');
@@ -88,7 +103,7 @@ ngApp.directive('body', function () {
                     $root.prepend($view);
                 };
 
-                $scope.removeView = function($view, callback){
+                $scope.removeView = function ($view, callback) {
                     $view.one('animationend', function () {
                         $timeout(function () {
                             if (callback) callback();
@@ -99,13 +114,20 @@ ngApp.directive('body', function () {
                     $view.addClass('animate-page-out');
                 };
 
+                $scope.addLoadingView = function(){
+                    if ($scope.flags.showLoadingScreen) {
+                        $element.append($scope.$loadingView);
+                    }
+                };
 
                 function init() {
+
                     configLoader.fetchConfig(function (err, configData) {
                         config = configData || config;
 
                         $scope.updateFlags();
                         $scope.setupCurrentView();
+                        $scope.addLoadingView();
 
                         $scope.$on('head:update', function (event, data) {
                             $scope.destroyClickOverrides();
@@ -117,9 +139,9 @@ ngApp.directive('body', function () {
 
                             console.log('body.view:update - new $spaContent: %o', $newContent);
 
-                            function setAttrs(){
+                            function setAttrs() {
                                 // update DOM.body
-                                _.forEach($body[0].attributes, function (attr, index) {
+                                _.forEach($body[0].attributes, function (attr) {
                                     $element.attr(attr.name, attr.value);
                                 });
 
@@ -129,14 +151,18 @@ ngApp.directive('body', function () {
                                 if (config.animationOutDuration) $activeContent.css({'animation-duration': config.animationOutDuration + 'ms'});
                             }
 
-
+                            $scope.showLoading();
                             setAttrs();
                             if ($scope.flags.asyncAnimation) {
-                                $scope.addView($newContent, $root);
+                                $scope.addView($newContent, $root, function () {
+                                    $scope.hideLoading();
+                                });
                                 $scope.removeView($activeContent);
                             } else {
-                                $scope.removeView($activeContent, function(){
-                                    $scope.addView($newContent, $root);
+                                $scope.removeView($activeContent, function () {
+                                    $scope.addView($newContent, $root, function () {
+                                        $scope.hideLoading();
+                                    });
                                 });
 
                             }
