@@ -3,11 +3,13 @@ var $ = require('jquery'),
     ToolTipster = require('tooltipster'),
 
     SelectElement = require('./views/select'),
+    DemoView = require('./views/demo'),
     SettingsController = require('./controllers/settings-controller'),
 
     settingsController = new SettingsController({
         onKeyframesLoaded: function () {
-            var $listItems = $('#wp-spa select').fillSelectOptions(settingsController.getKeyFrames()),
+            var $demo = $('.wpspa-demo').wpspaDemo(),
+                $listItems = $('#wp-spa select').fillSelectOptions(settingsController.getKeyFrames()),
                 $inputs = $('#wp-spa [data-description]');
 
             $inputs.each(function(index, el){

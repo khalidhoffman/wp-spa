@@ -110,6 +110,7 @@ class Wp_Spa_Admin extends WP_SPA_Message_Handler {
          * class.
          */
 
+        wp_enqueue_script('live-js', plugin_dir_url(__FILE__) . 'js/live.js', array(), null, true);
         wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/wp-spa-admin.js', array('jquery'), $this->version, true);
 
     }

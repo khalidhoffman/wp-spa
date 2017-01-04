@@ -17,8 +17,8 @@
       "input": "pug/"
     },
     {
-      "name" : "jade-php",
-      "input": "admin/jade/",
+      "name" : "pug-php",
+      "input": "admin/pug/",
       "output": "admin/partials/"
     },
     {

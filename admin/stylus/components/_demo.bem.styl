@@ -1,0 +1,30 @@
+.wpspa-demo
+  max-width: 15em;
+  width: 100%;
+  margin 0 auto;
+  /__view
+    height: @max-width;
+    width: 100%;
+    position relative;
+    background-color darken($color-grey, 15%);
+    overflow hidden
+  /__demo_el
+    short-transition(background-color);
+    box-shadow( 0 0 9px -2px $color-black);
+    background-color $color-white;
+    width: 60%
+    height: 80%
+    position absolute
+    bottom: -10px
+    left 0
+    right 0
+    margin 0 auto
+    animation none
+    ^[0]/--animating ^[-1..-1]
+      background-color transparentify($color-red, 25%);
+      animation-duration $duration-animation-demo-ms
+      animation-timing-function $timing-transition-default
+      animation-fill-mode forwards
+  /__setting
+    margin-top em-auto(12)
+    width 100%
