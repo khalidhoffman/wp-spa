@@ -17,7 +17,7 @@ require('includes/class-wp-spa-utils.php');
  * Plugin Name:       WP-SPA
  * Plugin URI:        http://dppad.com
  * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            Khalid Hoffman
  * Author URI:        khalidhoffman.solutions
  * License:           GPL-2.0+

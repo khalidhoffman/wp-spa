@@ -2,6 +2,13 @@ var $ = require('jquery'),
 
     RegisterEntry = require('./register-entry');
 
+/**
+ *
+ * @extends RegisterEntry
+ * @class ScriptRegisterEntry
+ * @param scriptDOMNode
+ * @constructor
+ */
 function ScriptRegisterEntry(scriptDOMNode) {
     RegisterEntry.apply(this, arguments);
 }

@@ -9,43 +9,11 @@ var url = require('url'),
                 }
             }
         },
-    pre = 'webkit',
     siteURL = $('head base').attr('href'),
     siteURLMeta = url.parse(siteURL),
     domParser = new DOMParser();
 
-
-if (window.getComputedStyle) {
-    // TODO simplify code
-    var styles = window.getComputedStyle(document.documentElement, '');
-    try {
-        pre = (Array.prototype.slice
-                .call(styles)
-                .join('')
-                .match(/-(moz|webkit|ms)-/) || (styles.OLink === '' && ['', 'o'])
-        )[1];
-    } catch (e) {
-        console.error("Couldn't determine browser prefix: ", e);
-    }
-}
-
 var utils = {
-    browserPrefix: pre,
-    setPrefixedStyle: function (el, cssProperty, cssValue) {
-        if (pre == "") {
-            el.style[cssProperty] = cssValue;
-        } else {
-            el.style[pre + cssProperty] = cssValue;
-        }
-    },
-    reverseArray: function reverse(a) {
-        var temp = [],
-            len = a.length;
-        while (len--) {
-            temp.push(a[len]);
-        }
-        return temp;
-    },
     createCookie: function (name, value, days) {
         if (days) {
             var date = new Date();
@@ -78,71 +46,30 @@ var utils = {
     },
     /**
      *
-     * @param func
-     * @param options
-     * @returns {function}
-     */
-    debounce: function (func, options) {
-        var timeout,
-            defaults = {
-                delay: 600,
-                context: null,
-                args: null
-            };
-        options = $.extend(defaults, options);
-
-        function done() {
-            func.apply(options.context, options.args);
-        }
-
-        function debounced() {
-            if (timeout) clearTimeout(timeout);
-            timeout = setTimeout(done, (options.delay));
-        }
-
-        return debounced;
-    },
-    /**
-     *
-     * @param {function} callback
-     * @param {object} options
-     * @param {object} options.context
-     * @param {Array} options.args
-     * @param {Boolean} options.isNumber
-     * @returns {string}
-     */
-    testPerformance: function (callback, options) {
-        if ((!performance) || (!performance.now)) return 'n/a';
-        var defaults = {
-                context: window,
-                args: null
-            },
-            t0 = 0,
-            t1 = 0;
-        options = $.extend(defaults, options);
-
-        t0 = performance.now();
-        callback.apply(options.context, options.args);
-        t1 = performance.now();
-        return (options.isNumber) ? (t1 - t0) : ('time: ' + (t1 - t0));
-    },
-    /**
-     *
-     * @param $el {jQuery}
+     * @param $target {jQuery|Number}
      * @param options {object} - {duration, callback, context}
      */
-    scrollTo: function ($el, options) {
+    scrollTo: function ($target, options) {
         var animateOptions = {
-            duration: (options) ? ((options.duration) ? options.duration : options) : 600
-        }, callbackCount = 1;
+                duration: (options) ? ((options.duration) ? options.duration : options) : 600
+            }, callbackCount = 1,
+            scrollTop = $target.offset ? ($target.offset().top - $('header').height() + 2) : $target;
         if (options && options.callback) {
             animateOptions['complete'] = function () {
                 if (callbackCount--) options.callback.apply(options.context, options.arguments);
             }
         }
         $('html, body').animate({
-            scrollTop: ($el.offset().top - $('header').height() + 2) // +2 for good measure
+            scrollTop: scrollTop// +2 for good measure
         }, animateOptions);
+    },
+    /**
+     *
+     * @param $target
+     */
+    jumpTo: function ($target) {
+        var scrollTop = $target.offset ? ($target.offset().top - $('header').height() + 2) : $target;
+        $('html, body').scrollTop((scrollTop < 0) ? 0 : scrollTop); // +2 for good measure
     },
     /**
      *
@@ -151,11 +78,10 @@ var utils = {
      * @returns {*|jQuery|HTMLElement}
      */
     parseDOMString: function (html, options) {
-        var defaults = {
+        var opts = _.defaults({
             safemode: true
-        };
-        options = $.extend(defaults, options);
-        if (options.safemode) {
+        }, options);
+        if (opts.safemode) {
             try {
                 var DOM = domParser.parseFromString(html, 'text/html');
                 return $(DOM);
@@ -166,14 +92,6 @@ var utils = {
         } else {
             return $(domParser.parseFromString(html, 'text/html'));
         }
-    },
-    /**
-     *
-     * @param $target
-     */
-    jumpTo: function ($target) {
-        var scrollTop = $target.offset ? ($target.offset().top - $('header').height() + 2) : $target;
-        $('html, body').scrollTop((scrollTop < 0) ? 0 : scrollTop); // +2 for good measure
     },
     getCurrentPath: function () {
         return location.pathname.substr(utils.getRootPath({trailingSlash: false}).length);
@@ -232,27 +150,6 @@ var utils = {
      */
     getRand: function (min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
-    },
-    /**
-     *
-     * @param {jQuery|HTMLElement} $el jQuery or HTMLElement to be fixed
-     * @param {object} options
-     * @param {number} options.height height of the viewport for the fixed HTMLElement
-     */
-    makeFixed: function ($el, options) {
-        var _$el = ($el.jQuery) ? $el : $($el),
-            _$parent = _$el.parent(),
-            _options = {
-                height: $el.height()
-            };
-        $.extend(_options, options);
-        _$parent.addClass('fixed-view-parent').css({
-            height: _options.height
-        });
-        _$parent.siblings(':not(.fixed-view)').addClass('fixed-view-sibling');
-        _$el.addClass('fixed-view').css({
-            height: _options.height
-        });
     },
     clearConsole: function () {
         if (typeof console._commandLineAPI !== 'undefined') {

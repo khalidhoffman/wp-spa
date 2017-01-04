@@ -174,25 +174,25 @@ ngApp.service('contentLoader', ['$http', 'configLoader',
          * @param {Function} [options.done]
          */
         this.getHTML = function (route, options) {
-            var _options = _.defaults(options, {
+            var opts = _.defaults(options, {
                 useCache: config['useCache'],
-                cache: config['useCache']
+                reusePages: config['reusePages']
             });
-            if (_options.useCache && self._cache[route]) {
-                var $DOM = self._cache[route].clone();
+            if (opts.useCache && self._cache[route]) {
+                var $DOM = opts.reusePages ? self._cache[route] : self._cache[route].clone();
                 console.log('spaContent._cache[%s] = (%O)', route, $DOM);
-                _options.done.call(null, null, $DOM);
+                opts.done.call(null, null, $DOM);
             } else {
                 $http.get(route).then(function success(response) {
                     console.log('spaContent.$http.get.success(%O)', response);
                     var _DOM = document.createElement('html');
                     _DOM.innerHTML = response.data;
                     var $DOM = angular.element(_DOM);
-                    if (_options.cache) self._cache[route] = $DOM;
-                    _options.done.call(null, null, $DOM.clone());
+                    if (opts.cache) self._cache[route] = $DOM;
+                    opts.done.call(null, null, opts.reusePages ? $DOM : $DOM.clone());
                 }, function failure(response) {
                     var err = new Error('spaContent.http.get("' + route + '") - Failed:' + response);
-                    _options.done.call(null, err);
+                    opts.done.call(null, err);
                 });
             }
         };

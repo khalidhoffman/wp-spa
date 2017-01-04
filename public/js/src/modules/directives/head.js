@@ -1,14 +1,8 @@
-var DiffDOM = require('diff-dom'),
-    diffDOM = new DiffDOM(),
-    skateDomDiff = require('skatejs-dom-diff'),
-    _ = require('lodash'),
-    $ = require('jquery'),
-    AST = require('modules/services/ast-builder.js'),
-    ngApp = require('ng-app');
+var ngApp = require('ng-app');
 
 ngApp.directive('head', function () {
     return {
-        restrict: 'AE',
+        restrict: 'E',
         link: function (scope, element, attrs, controller, transcludeFn) {
             console.log('head.link(%O)', arguments);
         },

@@ -51,6 +51,7 @@ class Wp_Spa_Public extends WP_SPA_Request_Handler {
      */
     public function __construct($plugin_name, $version) {
         parent::__construct();
+        show_admin_bar(false);
         $this->plugin_name = $plugin_name;
         $this->version = $version;
 
@@ -103,7 +104,7 @@ class Wp_Spa_Public extends WP_SPA_Request_Handler {
          * class.
          */
 
-        wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/wp-spa-public.js', array(), $this->version, true);
+        wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/wp-spa-public.js', array('jquery', 'backbone'), $this->version, true);
 
     }
 

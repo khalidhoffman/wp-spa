@@ -1,7 +1,7 @@
 === WP-SPA ===
-Contributors: @khalidhoffman
-Donate link: khalidhoffman.solutions
-Tags: WordPress, SPA, Plugin
+Contributors: khalidhoffman
+Donate link: khalidhoffman.info
+Tags: WordPress, SPA, plugin, animation, page, transition, effects
 Requires at least: 4.5.0
 Tested up to: 4.7
 Stable tag: 4.5
@@ -21,29 +21,39 @@ This Plugin enables a WordPress site to render animations between page transitio
 or
 
 1. clone repo into `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==
 
-= Will this work with any WordPress plugin? =
+= Will this work with any WordPress site? =
 
 Yes, hopefully.
+
+= How do I use this? =
+
+1. Activate Plugin
+2. Navigate to WP-SPA settings
+3. Change animation settings to your fancy
 
 = What libraries does this use? =
 
 Angular bundled with webpack.
 
+
+== Screenshots ==
+
+1. demo.gif
+
 == Changelog ==
 
-= 1.2 =
-* Enables greater control of animations
+= 1.0.2 =
+* Adds descriptions to admin settings
 
-= 1.0 =
+= 1.0.0 =
 * First release
 
 == Upgrade Notice ==
 
-= 1.0 =
+= 1.0.0 =
 Initial Release
 
 == Inspiration ==

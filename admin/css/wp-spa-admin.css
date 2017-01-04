@@ -1,6 +1,10 @@
+@import "./tooltipster.bundle.min.css";
 #wp-spa .settings input[type='text'],
 #wp-spa .settings input[type='url'],
 #wp-spa .settings input[type='number'],
 #wp-spa .settings textarea {
   width: 100%;
+}
+#wp-spa .settings tr > td {
+  display: inline-block;
 }

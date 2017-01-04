@@ -1,25 +1,23 @@
-var _ = require('lodash'),
-
-    RegisterEntry = require('./script-register-entry');
-
-function ScriptRegister() {
+function NodeRegister() {
     this.registry = [];
 }
 
-ScriptRegister.prototype = {
+NodeRegister.prototype = {
 
     /**
      *
      * @param {RegisterEntry} regEntry
      */
     contains: function (regEntry) {
-        var result = false;
-        _.forEach(this.registry, function (savedEntry) {
-            if (savedEntry.getId() == regEntry.getId()) {
-                result = true;
-                return false;
-            }
-        });
+        var result = false,
+            idx = 0;
+        while(this.registry[idx] && !result){
+          if (this.registry[idx].getId() == regEntry.getId()) {
+            result = true;
+          } else {
+            idx++;
+          }
+        }
         return result;
     },
 
@@ -34,4 +32,4 @@ ScriptRegister.prototype = {
     }
 };
 
-module.exports = ScriptRegister;
+module.exports = NodeRegister;

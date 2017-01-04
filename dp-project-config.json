@@ -31,7 +31,7 @@
       "input": "public/js/src/webpack.config.js"
     },
     {
-      "name" : "js-webpack.bak",
+      "name" : "js-webpack",
       "input": "admin/js/src/webpack.config.js"
     },
     {

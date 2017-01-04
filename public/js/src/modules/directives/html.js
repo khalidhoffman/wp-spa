@@ -8,7 +8,7 @@ var _ = require('lodash'),
 
 ngApp.directive('html', function () {
     return {
-        restrict: 'AE',
+        restrict: 'E',
         controller: [
             '$scope', '$element', 'configLoader',
             function ($scope, $element, configLoader) {

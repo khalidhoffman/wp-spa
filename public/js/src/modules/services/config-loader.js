@@ -1,6 +1,5 @@
 var _ = require('lodash'),
     utils = require('utils'),
-    $ = require('jquery'),
     ngApp = require('ng-app');
 
 console.log("require('content-service')");
@@ -12,9 +11,10 @@ ngApp.service('configLoader', [
             defaults = {
                 animationInName: 'fadeIn',
                 animationOutName: 'fadeOut',
-                animationInDuration: '400ms',
-                animationOutDuration: '400ms',
+                animationInDuration: 400,
+                animationOutDuration: 400,
                 useCache: 1,
+                reusePages: 0,
                 asyncAnimation: 1
             };
         this._state = {

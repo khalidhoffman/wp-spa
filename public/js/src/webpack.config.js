@@ -41,6 +41,8 @@ module.exports = {
             "null-module": "modules/null-module",
             "utils": "modules/utils",
 
+            "jquery": "vendors/jquery-wp",
+            "backbone": "vendors/backbone-wp",
             "live": "vendors/live",
             "moment": "vendors/moment/moment",
             "underscore": "lodash"
@@ -62,8 +64,7 @@ module.exports = {
 
         new webpack.ProvidePlugin({
             $: "jquery",
-            jQuery: "jquery",
-            "window.jQuery": "jquery"
+            jQuery: "jquery"
         }),
         // Hack for requirejs's domReady plugin
         new ModuleReplace(/^(domReady\!)$/, 'modules/null-module'),
