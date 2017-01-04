@@ -41,7 +41,7 @@ Angular bundled with webpack.
 
 == Screenshots ==
 
-1. demo.gif
+1. assets/demo.gif
 
 == Changelog ==
 
