@@ -41,6 +41,8 @@ class Wp_Spa_Activator {
             $default_config = new WP_Spa_Config();
             $default_config->save();
         }
+
+        // TODO remove plugin settings temporary override
         $default_config = new WP_Spa_Config();
         $default_config->save();
     }
