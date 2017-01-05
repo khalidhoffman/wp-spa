@@ -110,7 +110,10 @@ class Wp_Spa_Admin extends WP_SPA_Message_Handler {
          * class.
          */
 
-        wp_enqueue_script('live-js', plugin_dir_url(__FILE__) . 'js/live.js', array(), null, true);
+        if (preg_match('/localhost|192\.168\./', get_site_url())){
+            // for development
+            wp_enqueue_script('live-js', plugin_dir_url(__FILE__) . 'js/live.js', array(), null, true);
+        }
         wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/wp-spa-admin.js', array('jquery'), $this->version, true);
 
     }
@@ -224,7 +227,6 @@ class Wp_Spa_Admin extends WP_SPA_Message_Handler {
                 echo "<input data-description='$option_description' type='number' name='$option_name' id='$option_name' value='$option_value'/> ";
                 break;
             case 'checkbox':
-                $this->logger->addInfo("rendering $option_key w/ $option_value");
                 $value_attr = $option_value  ? 'checked' : '';
                 echo "<input type='checkbox' name='$option_name' data-description='$option_description' id='$option_name' $value_attr /> ";
                 break;

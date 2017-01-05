@@ -36,6 +36,13 @@ class ComposerStaticInitf307499f9ba6811b64d6d18a063595cd
                 0 => __DIR__ . '/..' . '/paquettg/string-encode/src',
             ),
         ),
+        'R' => 
+        array (
+            'Requests' => 
+            array (
+                0 => __DIR__ . '/..' . '/rmccue/requests/library',
+            ),
+        ),
         'P' => 
         array (
             'PHPHtmlParser' => 

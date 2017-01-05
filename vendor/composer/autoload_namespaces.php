@@ -7,5 +7,6 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'stringEncode' => array($vendorDir . '/paquettg/string-encode/src'),
+    'Requests' => array($vendorDir . '/rmccue/requests/library'),
     'PHPHtmlParser' => array($vendorDir . '/paquettg/php-html-parser/src'),
 );

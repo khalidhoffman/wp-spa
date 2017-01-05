@@ -42,7 +42,7 @@ class WP_SPA_Message_Handler extends WP_SPA_Loggable {
         } else {
             update_option($this->messages_queue_namespace, json_encode($this->message_queue));
         }
-        $this->logger->addInfo('save_messages', $this->message_queue);
+//        $this->logger->addInfo('save_messages', $this->message_queue);
     }
 
     public function render_message($message_meta) {
