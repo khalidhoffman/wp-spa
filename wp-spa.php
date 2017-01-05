@@ -15,14 +15,14 @@ require('includes/class-wp-spa-utils.php');
  *
  * @wordpress-plugin
  * Plugin Name:       WP-SPA
- * Plugin URI:        http://dppad.com
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
+ * Plugin URI:        https://wordpress.org/plugins/wp-spa
+ * Description:       Enables animations between site navigation
  * Version:           1.0.5
  * Author:            Khalid Hoffman
  * Author URI:        khalidhoffman.solutions
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       wp-spa
+ * Text Domain:       wp_spa
  * Domain Path:       /languages
  */
 
