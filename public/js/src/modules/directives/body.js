@@ -85,25 +85,33 @@ BodyDirective.prototype = {
     interceptAction: function (evt) {
         console.log('ngBody.interceptAction()');
         var self = this,
-            targetHref = evt.currentTarget.href || location.href;
+            targetHref = evt.currentTarget.href || location.href,
+            route = this.getRouteFromHREF(targetHref);
 
-        if (this.isHrefValid(targetHref)) {
+        if (route) {
             console.log('ngBody.interceptAction()  - routing to %s', utils.getPathFromUrl(targetHref));
             evt.preventDefault();
-            self.router.path(utils.getPathFromUrl(targetHref));
+            self.router.path(route);
         } else {
             console.log('ngBody.interceptAction() - no-op')
         }
     },
 
-    isHrefValid: function (href) {
+    getRouteFromHREF: function (href) {
         var targetHrefMeta = url.parse(href);
         if (/\/wp-admin\/?/.test(targetHrefMeta.path)) {
             return false;
-        } else if (this.config.captureAll) {
-            return this.baseHrefRegex.test(href);
+        } else if (
+            this.config.captureAll
+
+            // animate for path changes. allow native hash otherwise
+            || targetHrefMeta.hash && url.parse(location.href).pathname != targetHrefMeta.pathname
+
+            || this.contentLoader.hasPageSync(href)
+            || this.contentLoader.hasPostSync(href)) {
+            return targetHrefMeta.pathname
         } else {
-            return this.contentLoader.hasPageSync(href) || this.contentLoader.hasPostSync(href)
+            return false
         }
     },
 

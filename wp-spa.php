@@ -17,7 +17,7 @@ require('includes/class-wp-spa-utils.php');
  * Plugin Name:       WP-SPA
  * Plugin URI:        https://wordpress.org/plugins/wp-spa
  * Description:       Enables animations between site navigation
- * Version:           1.1.0
+ * Version:           1.1.1
  * Author:            Khalid Hoffman
  * Author URI:        khalidhoffman.solutions
  * License:           GPL-2.0+
