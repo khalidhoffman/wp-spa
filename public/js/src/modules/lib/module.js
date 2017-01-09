@@ -24,7 +24,7 @@ Module.prototype = {
         this.app.emit.apply(this.app, arguments)
     },
     $apply: function(callback){
-        callback()
+        this.$timeout(callback)
     }
 };
 

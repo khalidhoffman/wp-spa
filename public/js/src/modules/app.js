@@ -10,7 +10,11 @@ function Application() {
     var self = this;
 
     this.$timeout = function (callback, wait) {
-        setTimeout(callback, wait || 1);
+        if(window.requestAnimationFrame){
+            window.requestAnimationFrame(callback)
+        } else {
+            callback();
+        }
     };
     this.$window = $('window');
     this.meta = {

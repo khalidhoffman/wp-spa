@@ -167,8 +167,8 @@ BodyDirective.prototype = {
         $view.one('animationend', function () {
             self.$timeout(function () {
                 $view.removeClass('animate-page-in');
-                $view.css({'animation-name': ''});
                 $view.css({'animation-duration': ''});
+                $view.css({'animation-name': ''});
                 if (callback) callback();
 
                 // init some events in case 3rd-party lib uses it for rendering
@@ -179,8 +179,8 @@ BodyDirective.prototype = {
         });
 
         utils.jumpTo(0); // jump to top of screen
-        $view.addClass('animate-page-in');
         $root.prepend($view);
+        $view.addClass('animate-page-in');
     },
 
     removeView: function ($view, callback) {

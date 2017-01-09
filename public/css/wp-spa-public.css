@@ -10137,6 +10137,8 @@
   left: 0;
   top: 0;
   width: 100%;
+  max-height: 100vh;
+  overflow: hidden;
 }
 .animate-page-out {
   position: relative;
@@ -10149,9 +10151,6 @@
   z-index: 101;
 }
 .animate-page-in {
-  -webkit-transform: translate3d(0, 0, 0);
-  -ms-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
   -webkit-animation-duration: 400ms;
   animation-duration: 400ms;
   -webkit-animation-timing-function: ease;
