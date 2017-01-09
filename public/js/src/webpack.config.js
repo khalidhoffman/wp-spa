@@ -3,8 +3,7 @@ var path = require('path'),
     fs = require('fs'),
 
 
-    webpack = require('webpack'),
-    ModuleReplace = webpack.NormalModuleReplacementPlugin;
+    webpack = require('webpack');
 
 module.exports = {
     entry: "app.js",
@@ -20,34 +19,28 @@ module.exports = {
                 loader: 'raw!'
             },
             {
-                test: /jquery/,
-                loader: "expose?jQuery"
+                test: /history/,
+                loader: "exports?History"
             }
         ]
     },
     resolve: {
         root: __dirname,
         modulesDirectories: ['./', path.join(process.cwd(), 'node_modules')],
-        extensions: ['', '.js'],
+        extensions: ['.js', ''],
         alias: {
-            "ng-app": "modules/ng-app",
-            "ng-router": "modules/ng-router",
-            "ng-state": "modules/ng-state",
             "directives": "modules/directives/index",
             "controllers": "modules/controllers/index",
 
-            "wordpress": "modules/models/wordpress",
-            "config": "modules/config",
-            "null-module": "modules/null-module",
-            "utils": "modules/utils",
+            "utils": "modules/lib/utils",
 
             // overrides
             "jquery": "vendors/jquery-wp",
             "backbone": "vendors/backbone-wp",
+            "underscore": "lodash",
 
             "live": "vendors/live",
-            "moment": "vendors/moment/moment",
-            "underscore": "lodash"
+            "history": "vendors/native.history"
         }
     },
     shim: {

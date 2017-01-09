@@ -1,5 +1,5 @@
-define([
-    'modules/controllers/main-controller'
-], function(){
-    console.log("require('modules/controllers/index')");
-});
+console.log("require('modules/controllers/index')");
+
+module.exports = {
+    Main: require('modules/controllers/main-controller')
+};

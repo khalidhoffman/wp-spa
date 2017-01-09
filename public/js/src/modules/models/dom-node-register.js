@@ -10,9 +10,10 @@ NodeRegister.prototype = {
      */
     contains: function (regEntry) {
         var result = false,
+            regEntryId = regEntry.getId(),
             idx = 0;
         while(this.registry[idx] && !result){
-          if (this.registry[idx].getId() == regEntry.getId()) {
+          if (this.registry[idx].getId() == regEntryId) {
             result = true;
           } else {
             idx++;

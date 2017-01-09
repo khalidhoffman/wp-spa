@@ -1,46 +1,54 @@
 var utils = require('utils'),
-    $ = require('jquery'),
+    _ = require('lodash'),
 
-    contentLoader = require('../services/content-loader'),
-    ScriptRegister = require('../models/dom-node-register'),
+    Module = require('../lib/module'),
+    ScriptRegister = require('../models/dom-node-register');
 
-    $window = $(window),
-    ngApp = require('ng-app');
-
-window.WPSPA = $window;
 console.log("require('main-controller')");
 
-ngApp.controller('mainController', [
-    '$scope', "contentLoader", "$rootScope",
-    function ($scope, contentLoader, $rootScope) {
-        console.log('mainController(%O)', arguments);
-        $scope.$window = $window;
-        $scope.scriptRegister = new ScriptRegister();
+/**
+ * @extends Module
+ * @class MainController
+ * @constructor
+ */
+function MainController() {
+    Module.apply(this, arguments);
+    var $scope = this,
+        self = this;
 
-        $scope.$on('$locationChangeSuccess', function (event, to, from) {
-            if (to == from) return;
-            utils.clearConsole();
-            console.log('route: %o', arguments);
-            //var route = (to && to.pathParams && to.pathParams.route) ? to.pathParams.route : './';
-            var route = utils.getPathFromUrl(to);
-            console.log('mainController.$locationChangeSuccess() - routing to %o', route);
-            contentLoader.getHTML(to, {
-                done: function (err, $DOM) {
-                    if (err) {
-                        console.warn(err);
-                    } else {
-                        var data = {
-                            path: route,
-                            url: to,
-                            $DOM: $DOM
-                        };
-                        console.log('mainController.$locationChangeSuccess() - update');
-                        $rootScope.$broadcast("view:update", data);
-                        $scope.$window.trigger('view:update', data);
-                    }
+    console.log('mainController(%O)', arguments);
+    this.config = this.configLoader.getDefaults();
+    this.scriptRegister = new ScriptRegister();
+
+    this.configLoader.fetchConfig(function (err, configData) {
+        self.config = configData || self.config;
+    });
+    $scope.$on('$locationChangeSuccess', function (event, to, from) {
+        if (to == from) return;
+        utils.clearConsole();
+        console.log('route: %o', arguments);
+        console.log('mainController.$locationChangeSuccess() - routing to %o', to);
+        $scope.contentLoader.getHTML(to, {
+            useCache: self.config.useCache,
+            reusePages: self.config.reusePages,
+            done: function (err, $DOM) {
+                if (err) {
+                    console.warn(err);
+                } else {
+                    var data = {
+                        $DOM: $DOM
+                    };
+                    console.log('mainController.$locationChangeSuccess() - update');
+                    $scope.$broadcast("view:update", data);
+                    $scope.$window.trigger('view:update', data);
                 }
-            });
+            }
         });
-    }]);
+    });
+}
 
-module.exports = ngApp;
+MainController.prototype = {};
+
+_.defaults(MainController.prototype, Module.prototype);
+
+module.exports = MainController;

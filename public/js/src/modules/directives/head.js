@@ -1,42 +1,46 @@
-var ngApp = require('ng-app');
+var _ = require('lodash'),
+    $ = require('jquery'),
 
-ngApp.directive('head', function () {
-    return {
-        restrict: 'E',
-        link: function (scope, element, attrs, controller, transcludeFn) {
-            console.log('head.link(%O)', arguments);
-        },
-        controller: ['$scope', '$element', function ($scope, $element) {
-            console.log('head.controller(%O)', arguments);
+    Module = require('../lib/module');
 
+console.log('head.controller(%O)', arguments);
 
-            function init() {
+/**
+ * @class HeadDirective
+ * @constructor
+ */
+function HeadDirective(){
+    Module.apply(this, arguments);
+    var $scope = this,
+        $element = $('head');
 
-                $scope.$on('html:update', function (event, data) {
-                    var $DOM = data.$DOM;
-                    console.log("head.link()$scope.$on('view:update')");
-                    var $head = $DOM.find('head'),
-                        $newStyles = data.new.$styles;
+    this.$element = $element;
 
-                    // $oldScripts.remove();
+    $scope.$on('html:update', function (event, data) {
+        var $DOM = data.$DOM;
+        console.log("head.link()$scope.$on('view:update')");
+        var $head = $DOM.find('head'),
+            $newStyles = data.new.$styles;
 
-                    // add new styles to incoming head
-                    $head.append($newStyles);
+        // $oldScripts.remove();
 
-                    // update meta
-                    $element.find('meta').remove();
-                    $element.prepend($head.find('meta'));
-                    $element.find('title').remove();
-                    $element.prepend($head.find('title'));
+        // add new styles to incoming head
+        $head.append($newStyles);
 
-                    $scope.$broadcast('head:update', data)
-                });
+        // update meta
+        $element.find('meta').remove();
+        $element.prepend($head.find('meta'));
+        $element.find('title').remove();
+        $element.prepend($head.find('title'));
 
-            }
+        $scope.$broadcast('head:update', data)
+    });
+}
 
-            init();
-        }]
-    };
-});
+HeadDirective.prototype = {
 
-module.exports = ngApp;
+};
+
+_.defaults(HeadDirective.prototype, Module.prototype);
+
+module.exports = HeadDirective;

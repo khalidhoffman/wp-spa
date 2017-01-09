@@ -13,17 +13,17 @@ class WP_Spa_Config {
             'default' => ''
         ),
         array(
-            'name' => 'useCache',
-            'label' => "Cache Pages",
-            'description' => 'For debugging',
+            'name' => 'showLoadingScreen',
+            'label' => "Loading screen",
+            'description' => 'Show loading screen between animations',
             'type' => 'checkbox',
             'callback' => 'sanitize_checkbox_value',
             'default' => '1'
         ),
         array(
-            'name' => 'showLoadingScreen',
-            'label' => "Loading screen",
-            'description' => 'Show loading screen between animations',
+            'name' => 'captureAll',
+            'label' => "Capture all WP links",
+            'description' => 'Whether to handle navigation for all links or just posts and pages',
             'type' => 'checkbox',
             'callback' => 'sanitize_checkbox_value',
             'default' => '1'
@@ -55,6 +55,14 @@ class WP_Spa_Config {
             'description' => 'In milliseconds. For page exit animation',
             'type' => 'number',
             'default' => 600
+        ),
+        array(
+            'name' => 'useCache',
+            'label' => "Cache Pages",
+            'description' => 'For debugging',
+            'type' => 'checkbox',
+            'callback' => 'sanitize_checkbox_value',
+            'default' => '1'
         ),
         array(
             'name' => 'siteURL',

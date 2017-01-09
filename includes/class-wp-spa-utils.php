@@ -56,6 +56,11 @@ class Wp_Spa_Utils {
             }
             array_push($urls[$post_type], get_permalink());
         }
+        $categories = get_categories();
+        foreach($categories as $category){
+            array_push($urls['page'], get_permalink($category->term_id));
+        }
+        wp_reset_postdata();
         return $urls;
     }
 }

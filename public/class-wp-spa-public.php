@@ -104,7 +104,7 @@ class Wp_Spa_Public extends WP_SPA_Request_Handler {
          * class.
          */
 
-        wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/wp-spa-public.js', array('jquery', 'backbone'), $this->version, true);
+        wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/wp-spa-public.js', array('jquery'), $this->version, true);
 
     }
 
@@ -140,7 +140,7 @@ class Wp_Spa_Public extends WP_SPA_Request_Handler {
     public function on_final_output($html) {
         $template_name = $this->utils->get_current_template();
         // add attrs and wrapper elements to opening body tag
-        $html = preg_replace("/(<\s*html[^>]*)>/", "$1 ng-app='dp-spa'>", $html);
+        $html = preg_replace("/(<\s*html[^>]*)>/", "$1 ng-app='wp-spa'>", $html);
 
         // add attrs and wrapper elements to opening body tag
         $html = preg_replace("/(<\s*body[^>]*)>/", "$1 data-spa-template=\"$template_name\" ng-controller=\"mainController\"><div class=\"spa-content\"><div class=\"spa-content__content\">", $html);
