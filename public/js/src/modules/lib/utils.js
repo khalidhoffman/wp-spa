@@ -78,7 +78,7 @@ var utils = {
      * @returns {*|jQuery|HTMLElement}
      */
     parseDOMString: function (html, options) {
-        var opts = _.defaults({
+        var opts = utils.defaults({
             safemode: true
         }, options);
         if (opts.safemode) {
@@ -161,6 +161,20 @@ var utils = {
         }
 
         // console.API.clear();
+    },
+    defaults: function(){
+        var idx = 0,
+            base = arguments[idx++] || {},
+            next,
+            key;
+        while (next = arguments[idx++]){
+            for (key in next){
+                if(next.hasOwnProperty(key) && !base[key]){
+                    base[key] = next[key]
+                }
+            }
+        }
+        return base;
     }
 };
 

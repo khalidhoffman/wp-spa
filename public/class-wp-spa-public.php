@@ -143,10 +143,10 @@ class Wp_Spa_Public extends WP_SPA_Request_Handler {
         $html = preg_replace("/(<\s*html[^>]*)>/", "$1 ng-app='wp-spa'>", $html);
 
         // add attrs and wrapper elements to opening body tag
-        $html = preg_replace("/(<\s*body[^>]*)>/", "$1><div class=\"spa-content\"><div class=\"spa-content__content\">", $html);
+        $html = preg_replace("/(<\s*body[^>]*)>/", "$1><div class=\"spa-content\"><div class=\"spa-content__page\"><div class=\"spa-content__view\">", $html);
 
         // add closing tags to closing body tag
-        $html = preg_replace("/(<\s*\/\s*body\s*\>)/", "</div></div>$1", $html);
+        $html = preg_replace("/(<\s*\/\s*body\s*\>)/", "</div></div></div>$1", $html);
 
 
         return $html;

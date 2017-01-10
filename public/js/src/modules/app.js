@@ -16,7 +16,8 @@ function Application() {
             callback();
         }
     };
-    this.$window = $('window');
+    this.$window = $(window);
+    this.$root = $('.spa-content');
     this.meta = {
         baseHREF : $('head base').attr('href')
     };
@@ -45,6 +46,7 @@ Application.prototype = {
         var extendedProps = [
             '$timeout',
             '$window',
+            '$root',
             'meta',
             'configLoader',
             'contentLoader',

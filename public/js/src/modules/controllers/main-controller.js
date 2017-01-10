@@ -1,5 +1,4 @@
 var utils = require('utils'),
-    _ = require('lodash'),
 
     Module = require('../lib/module'),
     ScriptRegister = require('../models/dom-node-register');
@@ -49,6 +48,6 @@ function MainController() {
 
 MainController.prototype = {};
 
-_.defaults(MainController.prototype, Module.prototype);
+utils.defaults(MainController.prototype, Module.prototype);
 
 module.exports = MainController;

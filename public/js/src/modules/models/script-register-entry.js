@@ -1,5 +1,4 @@
-var $ = require('jquery'),
-
+var utils = require('utils'),
     RegisterEntry = require('./register-entry');
 
 /**
@@ -20,6 +19,6 @@ ScriptRegisterEntry.prototype = {
     }
 };
 
-_.defaults(ScriptRegisterEntry.prototype, RegisterEntry.prototype);
+utils.defaults(ScriptRegisterEntry.prototype, RegisterEntry.prototype);
 
 module.exports = ScriptRegisterEntry;

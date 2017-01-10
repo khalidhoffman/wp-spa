@@ -1,6 +1,6 @@
-var _ = require('lodash'),
-    $ = require('jquery'),
+var $ = require('jquery'),
 
+    utils = require('utils'),
     Module = require('../lib/module'),
     DOMNodeRegister = require('../models/dom-node-register'),
     ScriptRegisterEntry = require('../models/script-register-entry'),
@@ -17,7 +17,6 @@ function HTMLDirective() {
         $element = $('html');
 
     this.$element = $element;
-    $scope.$root = $element.find('.spa-content');
     $scope.selectors = {
         script: 'script',
         style: "link[rel='stylesheet'], style",
@@ -62,10 +61,9 @@ function HTMLDirective() {
             }
         });
 
-        var eventData = _.defaults({
+        var eventData = utils.defaults({
             $scripts: $scripts,
             $styles: $styles,
-            $root: $scope.$root,
             old: {
                 $scripts: $scripts.not("[data-spa-loaded='true']"),
                 $styles: $styles.not("[data-spa-loaded='true']")
@@ -106,7 +104,7 @@ HTMLDirective.prototype = {
      */
     formatDOM: function ($DOM, options) {
         var $scope = this,
-            _options = _.defaults({}, options),
+            _options = utils.defaults({}, options),
             $scripts = $DOM.find('script');
 
         if (_options.ignore) {
@@ -122,5 +120,5 @@ HTMLDirective.prototype = {
 
 };
 
-_.defaults(HTMLDirective.prototype, Module.prototype);
+utils.defaults(HTMLDirective.prototype, Module.prototype);
 module.exports = HTMLDirective;

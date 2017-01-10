@@ -1,5 +1,4 @@
-var _ = require('lodash'),
-    url = require('url'),
+var url = require('url'),
 
     $ = require('jquery'),
 
@@ -11,20 +10,20 @@ console.log("require('modules/directives/body')");
 
 /**
  * @extends Module
- * @class BodyDirective
+ * @class AnimationController
  * @constructor
  */
-function BodyDirective() {
+function AnimationController() {
     Module.apply(this, arguments);
 
     var self = this,
         $scope = this;
     this.config = this.configLoader.getDefaults();
-    this.$element = $('body');
+    this.$body = $('body');
     this.baseHrefRegex = new RegExp(url.parse(this.meta.baseHREF));
 
     $scope.mainSelector = this.configLoader.getMainSelector();
-    $scope.$loadingView = $(require("raw!./html/loading-view.html"));
+    $scope.$loadingView = $(require("raw!./../directives/html/loading-view.html"));
     $scope.loadingClassName = 'wp-spa-loading-view--loading';
 
     $scope.flags = {};
@@ -42,34 +41,20 @@ function BodyDirective() {
             $scope.destroyClickOverrides();
             var $DOM = data.$DOM,
                 $body = $DOM.find('body'),
-                $root = data.$root,
                 $newContent = $body.find($scope.mainSelector),
-                $activeContent = self.$element.find($scope.mainSelector);
+                $activeContent = self.$body.find($scope.mainSelector);
 
             console.log('body.view:update - new $spaContent: %o', $newContent);
 
-            function setAttrs() {
-                // update DOM.body
-                _.forEach($body[0].attributes, function (attr) {
-                    self.$element.attr(attr.name, attr.value);
-                });
-
-                if (self.config.animationInName) $newContent.css({'animation-name': self.config.animationInName});
-                if (self.config.animationOutName) $activeContent.css({'animation-name': self.config.animationOutName});
-                if (self.config.animationInDuration) $newContent.css({'animation-duration': self.config.animationInDuration + 'ms'});
-                if (self.config.animationOutDuration) $activeContent.css({'animation-duration': self.config.animationOutDuration + 'ms'});
-            }
-
             $scope.showLoading();
-            setAttrs();
             if ($scope.flags.asyncAnimation) {
-                $scope.addView($newContent, $root, function () {
+                $scope.removePage($activeContent);
+                $scope.addPage($newContent, $body[0].attributes, function () {
                     $scope.hideLoading();
                 });
-                $scope.removeView($activeContent);
             } else {
-                $scope.removeView($activeContent, function () {
-                    $scope.addView($newContent, $root, function () {
+                $scope.removePage($activeContent, function () {
+                    $scope.addPage($newContent, $body[0].attributes, function () {
                         $scope.hideLoading();
                     });
                 });
@@ -80,7 +65,7 @@ function BodyDirective() {
     });
 }
 
-BodyDirective.prototype = {
+AnimationController.prototype = {
 
     interceptAction: function (evt) {
         console.log('ngBody.interceptAction()');
@@ -129,7 +114,7 @@ BodyDirective.prototype = {
 
     createClickOverrides: function () {
         var $scope = this;
-        $scope.clickables = this.$element.find('[href]').not('[data-spa-initialized]');
+        $scope.clickables = this.$body.find('[href]').not('[data-spa-initialized]');
         $scope.clickables.on('click', this.$interceptAction);
         $scope.clickables.prop('data-spa-initialized', true);
     },
@@ -161,14 +146,17 @@ BodyDirective.prototype = {
         }
     },
 
-    addView: function ($view, $root, callback) {
+    addPage: function ($page, attrs, callback) {
         var self = this,
             $scope = this;
-        $view.one('animationend', function () {
+
+        $page.one('animationend', function () {
             self.$timeout(function () {
-                $view.removeClass('animate-page-in');
-                $view.css({'animation-duration': ''});
-                $view.css({'animation-name': ''});
+                $page.removeClass('animate-page-in');
+                $page.css({
+                    'animation-duration': '',
+                    'animation-name': ''
+                });
                 if (callback) callback();
 
                 // init some events in case 3rd-party lib uses it for rendering
@@ -179,31 +167,63 @@ BodyDirective.prototype = {
         });
 
         utils.jumpTo(0); // jump to top of screen
-        $root.prepend($view);
-        $view.addClass('animate-page-in');
+
+        // update DOM.body
+        var attr,
+            attrIdx = 0;
+        while(attr = attrs[attrIdx++]){
+            self.$body.attr(attr.name, attr.value);
+        }
+        this.$timeout(function(){
+            $page.css({
+                'animation-name': self.config.animationInName,
+                'animation-duration': self.config.animationInDuration + 'ms'
+            });
+            self.$root.prepend($page);
+            $page.addClass('animate-page-in');
+        });
     },
 
-    removeView: function ($view, callback) {
-        var $scope = this;
-        $view.one('animationend', function () {
-            $scope.$timeout(function () {
-                $view.remove();
+    removePage: function ($page, callback) {
+        var self = this,
+            $view = $page.find('.spa-content__view');
+
+        // adjust for clipped view
+        $view.css({
+            'margin-top': this.$window.scrollTop() * -1
+        });
+
+        $page.css({
+            'min-height': '100vh',
+            'overflow': 'hidden',
+            'animation-duration': this.config.animationOutDuration + 'ms'
+        });
+
+        $page.one('animationend', function () {
+            self.$timeout(function () {
+                $page.remove();
                 if (callback) callback();
             })
         });
 
-        $view.addClass('animate-page-out');
+        // allow overflow rendering first
+        this.$timeout(function () {
+            $page.css({
+                'animation-name': self.config.animationOutName
+            });
+            $page.addClass('animate-page-out');
+        });
     },
 
     addLoadingView: function () {
         var $scope = this;
         if ($scope.flags.showLoadingScreen) {
-            $scope.$element.append($scope.$loadingView);
+            $scope.$body.append($scope.$loadingView);
         }
     }
 };
 
-_.defaults(BodyDirective.prototype, Module.prototype);
+utils.defaults(AnimationController.prototype, Module.prototype);
 
-module.exports = BodyDirective;
+module.exports = AnimationController;
 

@@ -7,7 +7,7 @@ var $ = require('jquery'),
 $(function () {
     var app = new WPSPA(),
         mainController = new Controllers.Main(app),
+        animationController = new Controllers.Animation(app),
         html = new Directives.Html(app),
-        head = new Directives.Head(app),
-        body = new Directives.Body(app);
+        head = new Directives.Head(app);
 });

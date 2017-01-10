@@ -14,8 +14,8 @@ class WP_Spa_Config {
         ),
         array(
             'name' => 'showLoadingScreen',
-            'label' => "Loading screen",
-            'description' => 'Show loading screen between animations',
+            'label' => "Loading Icon",
+            'description' => 'Show loading animation between animations',
             'type' => 'checkbox',
             'callback' => 'sanitize_checkbox_value',
             'default' => '1'
@@ -55,14 +55,6 @@ class WP_Spa_Config {
             'description' => 'In milliseconds. For page exit animation',
             'type' => 'number',
             'default' => 600
-        ),
-        array(
-            'name' => 'useCache',
-            'label' => "Cache Pages",
-            'description' => 'For debugging',
-            'type' => 'checkbox',
-            'callback' => 'sanitize_checkbox_value',
-            'default' => '1'
         ),
         array(
             'name' => 'siteURL',

@@ -1,5 +1,4 @@
-var _ = require('lodash'),
-    utils = require('utils'),
+var utils = require('utils'),
     $ = require('jquery'),
 
     Module = require('../lib/module');
@@ -11,7 +10,7 @@ function ConfigLoader() {
         hasLoaded: false
     };
 
-    this._defaults = _.defaults({}, this.getDefaults());
+    this._defaults = utils.defaults({}, this.getDefaults());
 
     // use defaults for now
     this._data = this._defaults;
@@ -23,7 +22,7 @@ function ConfigLoader() {
 ConfigLoader.prototype = {
 
     getMainSelector: function () {
-        return '.spa-content__content';
+        return '.spa-content__page';
     },
 
     getDefaults: function () {
@@ -47,7 +46,7 @@ ConfigLoader.prototype = {
      */
     fetchConfig: function (callback, options) {
         var self = this,
-            opts = _.defaults(options, {});
+            opts = utils.defaults(options, {});
         if (self._state.hasLoaded && !opts.forceUpdate) {
             if (callback) callback(null, this._data);
         } else {
@@ -75,6 +74,6 @@ ConfigLoader.prototype = {
     }
 };
 
-_.defaults(ConfigLoader.prototype, Module.prototype);
+utils.defaults(ConfigLoader.prototype, Module.prototype);
 
 module.exports = ConfigLoader;

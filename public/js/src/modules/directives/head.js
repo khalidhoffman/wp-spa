@@ -1,6 +1,6 @@
-var _ = require('lodash'),
-    $ = require('jquery'),
+var $ = require('jquery'),
 
+    utils = require('utils'),
     Module = require('../lib/module');
 
 console.log('head.controller(%O)', arguments);
@@ -41,6 +41,6 @@ HeadDirective.prototype = {
 
 };
 
-_.defaults(HeadDirective.prototype, Module.prototype);
+utils.defaults(HeadDirective.prototype, Module.prototype);
 
 module.exports = HeadDirective;

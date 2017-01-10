@@ -19,12 +19,14 @@
 
 .animate-page-out 
   position: relative;
+  animation-name: pageIn;
   animation-duration $duration-transition-short-ms
   animation-timing-function $timing-animation-page-exit 
   animation-fill-mode forwards
   z-index: 101;
 
-.animate-page-in 
+.animate-page-in
+  animation-name: pageOut;
   animation-duration $duration-transition-default-ms
   animation-timing-function $timing-animation-page-entry 
   position: absolute;

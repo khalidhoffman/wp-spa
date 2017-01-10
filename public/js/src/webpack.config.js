@@ -2,7 +2,6 @@ var path = require('path'),
     url = require('url'),
     fs = require('fs'),
 
-
     webpack = require('webpack');
 
 module.exports = {
@@ -50,12 +49,12 @@ module.exports = {
         }
     },
     plugins: [
-        new webpack.optimize.UglifyJsPlugin({
-            compress : {
-                drop_console : true,
-                drop_debugger : true
-            }
-        }),
+        //new webpack.optimize.UglifyJsPlugin({
+        //    compress: {
+        //        drop_console: true,
+        //        drop_debugger: true
+        //    }
+        //}),
 
         new webpack.ProvidePlugin({
             $: "jquery",
