@@ -47,12 +47,12 @@ module.exports = {
         }
     },
     plugins: [
-        //new webpack.optimize.UglifyJsPlugin({
-        //    compress: {
-        //        drop_console: true,
-        //        drop_debugger: true
-        //    }
-        //}),
+        new webpack.optimize.UglifyJsPlugin({
+            compress: {
+                drop_console: true,
+                drop_debugger: true
+            }
+        }),
 
         new webpack.ProvidePlugin({
             $: "jquery",
