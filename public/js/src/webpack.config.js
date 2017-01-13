@@ -35,8 +35,6 @@ module.exports = {
 
             // overrides
             "jquery": "vendors/jquery-wp",
-            "backbone": "vendors/backbone-wp",
-            "underscore": "lodash",
 
             "live": "vendors/live",
             "history": "vendors/native.history"

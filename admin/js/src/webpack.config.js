@@ -18,10 +18,6 @@ module.exports = {
             {
                 test: /\.md$/,
                 loader: 'raw!'
-            },
-            {
-                test: /jquery/,
-                loader: "expose?jQuery"
             }
         ]
     },
@@ -30,7 +26,8 @@ module.exports = {
         modulesDirectories: [__dirname, path.join(process.cwd(), 'node_modules')],
         extensions: ['', '.js'],
         alias: {
-            "css-parser": "vendors/cssParser"
+            "css-parser": "vendors/cssParser",
+            "jquery": "vendors/jquery-wp"
         }
     },
     shim: {

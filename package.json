@@ -1,6 +1,6 @@
 {
   "name": "wp-spa",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "Converts a WordPress site to a SPA",
   "main": "index.php",
   "scripts": {
@@ -26,8 +26,6 @@
     "gulp-utils": "git+https://github.com/khalidhoffman/gulp-utils.git#dev",
     "imports-loader": "^0.6.5",
     "json-loader": "^0.5.4",
-    "jquery": "^3.1.1",
-    "lodash": "^4.15.0",
     "raw-loader": "^0.5.1",
     "tooltipster": "^4.1.6",
     "webpack": "^1.13.2"

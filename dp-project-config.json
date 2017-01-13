@@ -55,6 +55,11 @@
       "output": "public/css/"
     },
     {
+      "name" : "css",
+      "input": "admin/css/",
+      "output": "admin/css/"
+    },
+    {
       "name": "pug-html",
       "input": "public/js/src/modules/directives/html/",
       "output": "public/js/src/modules/directives/html/"
