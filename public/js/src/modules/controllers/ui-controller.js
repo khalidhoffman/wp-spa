@@ -48,7 +48,7 @@ function UIController() {
             self.loadingView.show(50);
         })
     }
-    this.execOnIdleTimed(function () {
+    this.exec(function () {
 
         // show animation on first render
         self.addPage(self.$body.find('.spa-content__page'), self.$body[0].attributes, function () {
