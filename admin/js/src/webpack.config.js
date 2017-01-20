@@ -36,25 +36,27 @@ module.exports = {
             "exports": 'Modernizr'
         }
     },
-    plugins: [
-        new webpack.optimize.UglifyJsPlugin({
-            compress: {
-                drop_console: true,
-                drop_debugger: true
-            }
-        }),
-
-        //new webpack.ProvidePlugin({
-        //  $: "jquery",
-        //  jQuery: "jquery",
-        //  "window.jQuery": "jquery"
-        //}),
-
-        // Hack for requirejs's css plugin
-        new ModuleReplace(/^css-parser$/, function (ctx) {
-            ctx.request = 'exports?CSSParser!' + ctx.request;
-        })
-    ],
+    plugins: (function () {
+        var config = JSON.parse(require('fs').readFileSync(require('path').join(process.cwd(), 'dp-project-config.json'), 'utf8')),
+            defaults = [
+                new webpack.optimize.UglifyJsPlugin({
+                    compress: {
+                        drop_console: true,
+                        drop_debugger: true
+                    }
+                }),
+                new ModuleReplace(/^css-parser$/, function (ctx) {
+                    ctx.request = 'exports?CSSParser!' + ctx.request;
+                })
+            ];
+        switch (config.flag) {
+            case 'dev':
+                return defaults.slice(1);
+                break;
+            default:
+                return defaults;
+        }
+    })(),
     node: {
         'path': true,
         'url': true

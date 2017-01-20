@@ -11,19 +11,28 @@ function ContentLoader() {
         pages: [],
         posts: []
     };
-    this._cache = [];
+    this._cache = {};
     this.downloadSiteMap();
-};
+}
 
 ContentLoader.prototype = {
     get: function (path) {
         return this.data[path];
     },
+
     set: function (path, value) {
         return this.data[path] = value;
     },
+
     isReady: function () {
         return this.get('isReady');
+    },
+
+    preCache: function(idx){
+        idx = idx || 0;
+        var route = this.get('posts')[idx];
+        if (route) this.getHTML(url.parse(route).pathname, {useCache: true});
+        return this.get('posts')[idx + 1] ?  this.preCache(idx+1) : null;
     },
 
     /**
@@ -40,7 +49,7 @@ ContentLoader.prototype = {
         if (opts.useCache && self._cache[route]) {
             var $DOM = opts.reusePages ? self._cache[route] : self._cache[route].clone();
             console.log('spaContent._cache[%s] = (%O)', route, $DOM);
-            opts.done.call(null, null, $DOM);
+            if (opts.done) opts.done.call(null, null, $DOM);
         } else {
             $.ajax({
                 url: /^http/.test(route) ? route : url.resolve(self.meta.baseHREF, route),
@@ -49,12 +58,12 @@ ContentLoader.prototype = {
                     var _DOM = document.createElement('html');
                     _DOM.innerHTML = response;
                     var $DOM = $(_DOM);
-                    if (opts.cache) self._cache[route] = $DOM;
-                    opts.done.call(null, null, opts.reusePages ? $DOM : $DOM.clone());
+                    if (opts.useCache) self._cache[route] = $DOM;
+                    if (opts.done) opts.done.call(null, null, opts.reusePages ? $DOM : $DOM.clone());
                 },
                 failure: function (response) {
                     var err = new Error('spaContent.http.get("' + route + '") - Failed:' + response);
-                    opts.done.call(null, err);
+                    if (opts.done) opts.done.call(null, err);
                 }
             });
         }

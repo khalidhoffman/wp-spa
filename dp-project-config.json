@@ -1,25 +1,11 @@
 {
   "name": "wp-spa",
   "workingDir" : "default",
+  "flag": "prod",
   "tasks" : [
     {
-      "name" : "pug-ejs",
-      "input": "js/src/modules/views/html/",
-      "output": "js/src/modules/views/"
-    },
-    {
-      "name" : "pug-php",
-      "input": "pug/",
-      "output": "./"
-    },
-    {
       "name" : "pug-beautify",
-      "input": "pug/"
-    },
-    {
-      "name" : "pug-php",
-      "input": "admin/pug/",
-      "output": "admin/partials/"
+      "input": "admin/pug/"
     },
     {
       "name" : "js",
@@ -27,17 +13,13 @@
       "ignore" : ["**/node_modules/**", "**/vendors/**"]
     },
     {
-      "name" : "js-webpack",
-      "input": "public/js/src/webpack.config.js"
+      "name" : "pug-php",
+      "input": "admin/pug/",
+      "output": "admin/partials/"
     },
     {
       "name" : "js-webpack",
       "input": "admin/js/src/webpack.config.js"
-    },
-    {
-      "name" : "jsx",
-      "input": "js/src/",
-      "ignore" : ["**/node_modules/**", "**/vendors/**"]
     },
     {
       "name" : "stylus-bem",
@@ -45,6 +27,15 @@
       "output": "admin/css/"
     },
     {
+      "name" : "css",
+      "input": "admin/css/",
+      "output": "admin/css/"
+    },
+    {
+      "name" : "js-webpack",
+      "input": "public/js/src/webpack.config.js"
+    },
+    {
       "name" : "stylus-bem",
       "input": "public/css/",
       "output": "public/css/"
@@ -55,34 +46,9 @@
       "output": "public/css/"
     },
     {
-      "name" : "css",
-      "input": "admin/css/",
-      "output": "admin/css/"
-    },
-    {
       "name": "pug-html",
-      "input": "public/js/src/modules/directives/html/",
-      "output": "public/js/src/modules/directives/html/"
-    },
-    {
-      "name": "sass",
-      "input": "sass/",
-      "output": "stylesheets/"
-    },
-    {
-      "name": "less",
-      "input": "less/",
-      "output": "stylesheets/"
-    },
-    {
-      "name": "html-2-pug",
-      "input": "/",
-      "output": "pug/"
-    },
-    {
-      "name": "php-2-pug",
-      "input": "/",
-      "output": "pug/"
+      "input": "public/js/src/modules/views/html/",
+      "output": "public/js/src/modules/views/html/"
     }
   ]
 }

@@ -1,33 +1,80 @@
-@keyframes pageOut
-  100%
+@keyframes delayedFallback
+  0%
     opacity 0
-    transform translateY(5em) scale(.75, .75);
+  75%
+    opacity 0
+    transition-origin 50% 50%
+    transform translate(0, 5em) scale(.9)
+  100%
+    transform translate(0,0) scale(1)
+    opacity 1
+
+@keyframes pageOut
+  0%
+    transform translate3d(0, 0, 0);
+    opacity 1
+  50%
+    opacity 1
+  100%
+    transform scale(.85) translate3d(0, 5em, 0);
+    opacity 0
 
 @keyframes pageIn
   0%
-    transform translateY(100vh);
+    transform scale(.85) translate3d(0, 5em, 0);
+    opacity 0
+  50%
+    opacity 1
   100%
-    transform translateY(0);
+    transform translate3d(0, 0, 0);
+    opacity 1
+@keyframes shake
+  0%
+    transform scale3d(1,1,1)
+  33%
+    transform scale3d($ratio-pulse, $ratio-pulse, $ratio-pulse)
+  66%
+    transform scale3d($ratio-pulse, $ratio-pulse, $ratio-pulse)
+  100%
+    transform scale3d(1,1,1)
+
+
+html
+  height 100%
+head + *
+  transition background $duration-transition-default-ms $timing-transition-default
+  min-height 100%
+
+.spa-content
+  position relative
+  z-index 0
+  &/--shake
+    /__page
+      animation shake $duration-transition-default-ms $timing-transition-default
 
 .animate-page-out,
 .animate-page-in 
   left:0;
   top: 0;
   width: 100%;
-  max-height: 100vh;
-  overflow: hidden;
+  &/--clipped
+    max-height: 100vh;
+    overflow: hidden;
 
 .animate-page-out 
   position: relative;
-  animation-name: pageIn;
-  animation-duration $duration-transition-short-ms
-  animation-timing-function $timing-animation-page-exit 
+  animation-name: pageOut;
+  animation-duration $duration-transition-default-ms
+  animation-timing-function $timing-animation-page-exit
   animation-fill-mode forwards
   z-index: 101;
 
 .animate-page-in
-  animation-name: pageOut;
+  animation-name: pageIn;
   animation-duration $duration-transition-default-ms
   animation-timing-function $timing-animation-page-entry 
   position: absolute;
   z-index: 102;
+  &.spa-content--no-js
+    animation-name: delayedFallback;
+    animation-duration: 4s

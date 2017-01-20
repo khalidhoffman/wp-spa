@@ -169,7 +169,7 @@ var utils = {
             key;
         while (next = arguments[idx++]){
             for (key in next){
-                if(next.hasOwnProperty(key) && !base[key]){
+                if(next.hasOwnProperty(key) && base[key] == undefined){
                     base[key] = next[key]
                 }
             }

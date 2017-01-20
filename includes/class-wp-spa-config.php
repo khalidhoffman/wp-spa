@@ -10,14 +10,6 @@ class WP_Spa_Config {
             'description' => 'animate page entry at the same time as page exit',
             'type' => 'checkbox',
             'callback' => 'sanitize_checkbox_value',
-            'default' => ''
-        ),
-        array(
-            'name' => 'showLoadingScreen',
-            'label' => "Loading Icon",
-            'description' => 'Show loading animation between animations',
-            'type' => 'checkbox',
-            'callback' => 'sanitize_checkbox_value',
             'default' => '1'
         ),
         array(
@@ -29,18 +21,58 @@ class WP_Spa_Config {
             'default' => '1'
         ),
         array(
+            'name' => 'showLoadingScreen',
+            'label' => "Show Loading Animation",
+            'description' => 'Show loading animation between transitions',
+            'type' => 'checkbox',
+            'callback' => 'sanitize_checkbox_value',
+            'default' => '1'
+        ),
+        array(
+            'conditionals' => array('#wp_spa_showLoadingScreen'),
+            'name' => 'loadingScreenType',
+            'label' => "Loading Indicator Type",
+            'description' => 'Whether to display a progress loading bar or pulsing icon',
+            'type' => 'select',
+            'options' => array('indeterminate', 'progress'),
+            'default' => 'indeterminate'
+        ),
+        array(
+            'conditionals' => array('#wp_spa_showLoadingScreen'),
+            'name' => 'loadingColor',
+            'label' => "Loading Indicator Color",
+            'description' => 'Color of loading indicator between animations',
+            'type' => 'color',
+            'default' => '#4DD0E1'
+        ),
+        array(
+            'name' => 'overrideBackgroundColor',
+            'label' => "Override Background Color",
+            'description' => 'Set background color for between animations',
+            'type' => 'checkbox',
+            'default' => '1'
+        ),
+        array(
+            'conditionals' => array('#wp_spa_overrideBackgroundColor'),
+            'name' => 'backgroundColor',
+            'label' => "Background Color",
+            'description' => 'Page background between animations',
+            'type' => 'color',
+            'default' => '#212121'
+        ),
+        array(
             'name' => 'animationInName',
             'label' => "Animation Name (In)",
             'description' => 'Page entry animation',
-            'type' => 'select',
-            'default' => 'slideInUp'
+            'type' => 'animation',
+            'default' => 'pageIn'
         ),
         array(
             'name' => 'animationOutName',
             'label' => "Animation Name (Out)",
             'description' => 'Page exit animation',
-            'type' => 'select',
-            'default' => 'fadeOutUp'
+            'type' => 'animation',
+            'default' => 'pageOut'
         ),
         array(
             'name' => 'animationInDuration',
@@ -60,6 +92,30 @@ class WP_Spa_Config {
             'name' => 'siteURL',
             'type' => 'hidden',
             'callback' => 'sanitize_site_url'
+        ),
+        array(
+            'name' => 'useScreenClip',
+            'label' => 'Clip Views',
+            'description' => 'fix the view during transitions (can improve performance)',
+            'type' => 'checkbox',
+            'callback' => 'sanitize_checkbox_value',
+            'default' => '1'
+        ),
+        array(
+            'name' => 'enforceSmooth',
+            'label' => 'Enforce Smooth Animations ',
+            'description' => 'helps guarantee smooth animations at the cost load time',
+            'type' => 'checkbox',
+            'callback' => 'sanitize_checkbox_value',
+            'default' => '1'
+        ),
+        array(
+            'name' => 'enableCacheBusting',
+            'label' => 'Force Browser Updates',
+            'description' => 'Enables cache-busting methods to ensure the browser always uses the latest settings on page load (Many browsers like to reuse previous settings for speed)',
+            'type' => 'checkbox',
+            'callback' => 'sanitize_checkbox_value',
+            'default' => '1'
         )
     );
     private $saveDir = '/data/';
@@ -126,10 +182,10 @@ class WP_Spa_Config {
         foreach ($this->settings as $setting) {
             $setting_key = $setting['name'];
             $value = $this->get_value($setting_key);
-            if (isset($value)){
+            if (isset($value)) {
                 $config_values[$setting_key] = $value;
-            } else if (isset($setting['default'])){
-                $config_values[$setting_key] =  $setting['default'];
+            } else if (isset($setting['default'])) {
+                $config_values[$setting_key] = $setting['default'];
             }
         }
         $data_text = json_encode($config_values);

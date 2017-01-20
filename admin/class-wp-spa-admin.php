@@ -158,7 +158,7 @@ class Wp_Spa_Admin extends WP_SPA_Message_Handler {
         return get_option(WP_Spa_Config::format_option_name($option_name));
     }
 
-    private function add_setting($option_name, $label = "New Option", $type = 'text', $callback = false) {
+    private function add_setting($option_name, $label = "New Option", $type = 'text', $callback = false, $options = array(), $conditionals = array()) {
 
         $input_type = strtolower($type);
         $option_global_name = WP_Spa_Config::format_option_name($option_name);
@@ -178,6 +178,8 @@ class Wp_Spa_Admin extends WP_SPA_Message_Handler {
         switch ($input_type) {
             case 'text':
             case 'select':
+            case 'animation':
+            case 'color':
             case 'number':
             case 'hidden':
             case 'checkbox':
@@ -187,7 +189,14 @@ class Wp_Spa_Admin extends WP_SPA_Message_Handler {
                     array($this, 'wp_spa_render_input'),
                     $this->plugin_name,
                     WP_SPA_Config::format_option_name($this->main_settings_option_name),
-                    array('name' => $option_global_name, 'key'=> $option_name, 'label' => $label, 'type' => $type)
+                    array(
+                        'conditionals' => $conditionals, 
+                        'name' => $option_global_name, 
+                        'key'=> $option_name,
+                        'label' => $label, 
+                        'type' => $type, 
+                        'options' => $options
+                    )
                 );
                 break;
             default:
@@ -209,19 +218,40 @@ class Wp_Spa_Admin extends WP_SPA_Message_Handler {
             $label = isset($setting['label']) ? $setting['label'] : null;
             $type = isset($setting['type']) ? $setting['type'] : null;
             $callback = isset($setting['callback']) ?  $setting['callback'] : null;
-            $this->add_setting($name, $label, $type, $callback);
+            $options = isset($setting['options']) ?  $setting['options'] : null;
+            $conditionals = isset($setting['conditionals']) ?  $setting['conditionals'] : null;
+            $this->add_setting($name, $label, $type, $callback, $options, $conditionals);
         }
     }
 
     public function wp_spa_render_input($args) {
+        $option_conditionals = $args['conditionals'];
+        $has_conditionals = $option_conditionals && count($option_conditionals) > 0;
         $option_name = $args['name'];
         $option_key = $args['key'];
         $option_type = $args['type'];
         $option_description = $this->config->get_description($option_key);
         $option_value = get_option($option_name);
+        
+        if($has_conditionals){
+            $conditionals = '';
+            foreach($option_conditionals as $condition){
+                $conditionals .= $condition . ' ';
+            }
+            echo "<div class='conditional' data-conditionals='$conditionals'>";
+        }
+
         switch ($option_type) {
             case 'select':
-                echo "<select data-description='$option_description' data-default='$option_value' name='$option_name' id='$option_name' disabled><option>Select an animation...</option></select>";
+                $options = $args['options'];
+                echo "<select data-description='$option_description' data-default='$option_value' name='$option_name' id='$option_name'>";
+                foreach ($options as $option){
+                    echo "<option value='$option' ". ($option_value == $option ? 'selected' :  '') .">$option</option>";
+                }
+                echo "</select>";
+                break;
+            case 'animation':
+                echo "<select class='select-animation' data-description='$option_description' data-default='$option_value' name='$option_name' id='$option_name' disabled><option>Select an animation...</option></select>";
                 break;
             case 'number':
                 echo "<input data-description='$option_description' type='number' name='$option_name' id='$option_name' value='$option_value'/> ";
@@ -232,10 +262,17 @@ class Wp_Spa_Admin extends WP_SPA_Message_Handler {
                 break;
             case 'hidden';
                 break;
+            case 'color':
+                echo "<input data-description='$option_description' type='color' name='$option_name' id='$option_name' value='$option_value'/> ";
+                break;
             case 'text':
             default:
                 echo "<input data-description='$option_description' type='text' name='$option_name' id='$option_name' value='$option_value'/> ";
                 break;
+        }
+
+        if ($has_conditionals){
+            echo "</div>";
         }
 
     }

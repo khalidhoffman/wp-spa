@@ -1,11 +1,44 @@
 .feedback
-  max-width: em-auto(600)
-  width 100%
-  margin 0 auto
-  text-align center
+  box-sizing border-box
+  *
+    box-sizing inherit
+  &/--visible
+    /__modal
+      display table
+  /__modal
+    animation fadeIn $duration-transition-default-ms $timing-transition-default
+    width 100%
+    margin 0 auto
+    overflow hidden
+    fixed -1px -1px -1px -1px
+    z-index 99
+    background-color transparentify($color-black, 60%)
+    display none
+    padding em-auto(12)
+    height 100%
+  /__wrap
+    display table-cell
+    vertical-align middle
+  /__content
+    max-width: em-auto(600)
+    width 100%
+    margin 0 auto
+    text-align center;
+  /__heading
+    vertical-align middle
+    text-align center;
+    *
+      color $color-white;
   textarea
-    height: 5em;
+    height: 10em;
     width: 100%
   .button
+    &/--feedback
+      position absolute
+      top em-auto(12)
+      right em-auto(12)
+      z-index 2
+    &/--close,
     &/--send
-      margin-top 1em;
+      vertical-align middle
+      margin em-auto(12) em-auto(6);

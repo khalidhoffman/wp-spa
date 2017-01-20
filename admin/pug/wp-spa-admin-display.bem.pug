@@ -16,13 +16,6 @@ include _auto-generated/_-all
         h1._content!=echo("esc_html(get_admin_page_title());")
     .settings
         ._content
-            .setting-section.-vars.-left
-                ._content
-                    form.setting-form(action="options.php" method="post")
-                        :php
-                            settings_fields($this->plugin_name);
-                            do_settings_sections($this->plugin_name);
-                            submit_button();
             .setting-section.-demo.-right
                 .wpspa-demo
                     .__heading
@@ -30,10 +23,22 @@ include _auto-generated/_-all
                     .__content
                         .__view
                             .__demo_el
-                        select.__setting()
+                        select.__setting.select-animation()
+            .setting-section.-vars.-left
+                ._content
+                    form.setting-form(action="options.php" method="post")
+                        :php
+                            settings_fields($this->plugin_name);
+                            do_settings_sections($this->plugin_name);
+                            submit_button();
+
     .feedback
-        .__heading
-            h2 Send Feedback
-        .__content
-            textarea.__input()
-            a.button.button-primary.-send Send
+        a.button.button-primary.-start Send Feedback
+        .__modal
+            .__wrap
+                .__content
+                    .__heading
+                        h2 Send Feedback
+                    textarea.__input()
+                    a.button.button-primary.-send Send
+                    a.button.-close Cancel

@@ -11,17 +11,42 @@
   width 100%
   display none
   z-index 103
-  &/--loading
-    display: table
-  /__icon
-    display table-cell
-    vertical-align middle
-    &:before
-      content: ''
+  &/--progress
+    &/--loading
       display block
-      background-color: transparentify($color-grey, 50%);
-      border-radius 50%
-      size: 3em
-      margin 0 auto
-      animation pulse $duration-transition-default-ms $timing-transition-default alternate infinite
-
+    /__wrap
+      pointer-events none
+      user-select none
+    /__progress-bar
+      transition transform 1000ms ease, opacity 400ms linear;
+      background-color $color-loading-bar
+      position fixed
+      z-index 2000
+      top 0
+      right 100%
+      width 100%
+      height 2px
+    /__progress-bar-shadow
+      position absolute
+      right 0
+      width 100px
+      height 100%
+      box-shadow 0 0 10px $color-white, 0 0 6px $color-white
+      transform rotate(4deg) translate(0px, -4px)
+  &/--indeterminate
+    /__icon
+      opacity 0
+      default-transition(opacity);
+    &/--loading
+      display: table
+      /__wrap
+        display table-cell
+        vertical-align middle
+      /__icon
+        opacity .9
+        background-color: transparentify($color-grey, 50%);
+        border-radius 50%
+        box-shadow 0 0 8px -3px $color-black
+        size: 3em
+        margin 0 auto
+        animation pulse $duration-transition-default-ms $timing-transition-default alternate infinite

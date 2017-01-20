@@ -1,4 +1,6 @@
+yarn.lock
 admin/js/live.js
+public/js/live.js
 *.swp
 *.swo
 /data/*

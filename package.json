@@ -1,11 +1,15 @@
 {
   "name": "wp-spa",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "description": "Converts a WordPress site to a SPA",
   "main": "index.php",
   "scripts": {
     "test": "jasmine",
     "webpack": "webpack --display-reasons",
+    "public-js": "onchange 'public/js/src/**/*.js' -- gulp build-webpack",
+    "public-js-screen": "cd ~/wp-spa; screen -S spa_js -d -m npm run public-js",
+    "public-css": "onchange 'public/js/src/**/*.styl' -- gulp stylus-bem && gulp css",
+    "public-css-screen": "cd ~/wp-spa; screen -S spa_css -d -m npm run public-css",
     "install:composer": "composer install",
     "setup": "dp-setup"
   },
@@ -28,7 +32,8 @@
     "json-loader": "^0.5.4",
     "raw-loader": "^0.5.1",
     "tooltipster": "^4.1.6",
-    "webpack": "^1.13.2"
+    "webpack": "^1.13.2",
+    "webpack-bundle-analyzer": "^2.2.1"
   },
   "dependencies": {}
 }

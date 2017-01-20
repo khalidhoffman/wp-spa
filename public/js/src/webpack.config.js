@@ -25,12 +25,9 @@ module.exports = {
     },
     resolve: {
         root: __dirname,
-        modulesDirectories: ['./', path.join(process.cwd(), 'node_modules')],
+        modulesDirectories: [__dirname, path.join(process.cwd(), 'node_modules')],
         extensions: ['.js', ''],
         alias: {
-            "directives": "modules/directives/index",
-            "controllers": "modules/controllers/index",
-
             "utils": "modules/lib/utils",
 
             // overrides
@@ -46,19 +43,32 @@ module.exports = {
             "exports": 'Modernizr'
         }
     },
-    plugins: [
-        new webpack.optimize.UglifyJsPlugin({
-            compress: {
-                drop_console: true,
-                drop_debugger: true
-            }
-        }),
-
-        new webpack.ProvidePlugin({
-            $: "jquery",
-            jQuery: "jquery"
-        })
-    ],
+    plugins: (function () {
+        var config = JSON.parse(require('fs').readFileSync(require('path').join(process.cwd(), 'dp-project-config.json'), 'utf8')),
+            plugins = [
+                new webpack.optimize.UglifyJsPlugin({
+                    compress: {
+                        drop_console: true,
+                        drop_debugger: true
+                    }
+                }),
+                new webpack.ProvidePlugin({
+                    $: "jquery",
+                    jQuery: "jquery"
+                })
+            ];
+        switch (config.flag) {
+            case 'profile':
+                BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+                plugins = plugins.concat([
+                    new BundleAnalyzerPlugin()
+                ]);
+            case 'dev':
+                return plugins.slice(1);
+            default:
+                return plugins;
+        }
+    })(),
     node: {
         'path': true,
         'url': true

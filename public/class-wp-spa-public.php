@@ -81,7 +81,7 @@ class Wp_Spa_Public extends WP_SPA_Request_Handler {
          * class.
          */
 
-        wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/wp-spa-public.css', array(), $this->version, 'all');
+        wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/wp-spa-public.min.css', array(), $this->version, 'all');
 
     }
 
@@ -104,7 +104,14 @@ class Wp_Spa_Public extends WP_SPA_Request_Handler {
          * class.
          */
 
-        wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/wp-spa-public.js', array('jquery'), $this->version, true);
+        $is_cache_busting_enabled = intval(get_option(WP_Spa_Config::format_option_name('enableCacheBusting'))) === 1;
+        wp_enqueue_script(
+            $this->plugin_name,
+            plugin_dir_url(__FILE__) . 'js/wp-spa-public.js',
+            array('jquery'),
+            $is_cache_busting_enabled ? round(microtime(true) * 1000) : $this->version,
+            true
+        );
 
     }
 
@@ -138,12 +145,29 @@ class Wp_Spa_Public extends WP_SPA_Request_Handler {
     }
 
     public function on_final_output($html) {
-        $template_name = $this->utils->get_current_template();
+	$styles = "";
+	$wp_spa_props = "";
+	$wp_spa_page_class_name = "";
+	$wp_spa_page_props = "";
+	if ( $GLOBALS['pagenow'] !== 'wp-login.php' ) {
+	    // We're on the login page!
+            if(intval(get_option(WP_Spa_Config::format_option_name('overrideBackgroundColor'))) == 1){
+                $styles = sprintf("<style>body{background-color: %s;}</style>", get_option(WP_Spa_Config::format_option_name('backgroundColor')));
+            }
+            if(intval(get_option(WP_Spa_Config::format_option_name('showLoadingScreen'))) == 1){
+                $wp_spa_props = sprintf("data-wp-spa-loader-type='%s' data-wp-spa-loader-color='%s'",
+                    get_option(WP_Spa_Config::format_option_name('loadingScreenType')),
+                    get_option(WP_Spa_Config::format_option_name('loadingColor')));
+            }
+	    $wp_spa_page_class_name = "animate-page-in spa-content--no-js";
+	    $wp_spa_page_props = sprintf("");
+	}
+
         // add attrs and wrapper elements to opening body tag
         $html = preg_replace("/(<\s*html[^>]*)>/", "$1>", $html);
 
         // add attrs and wrapper elements to opening body tag
-        $html = preg_replace("/(<\s*body[^>]*)>/", "$1><div class=\"spa-content\"><div class=\"spa-content__page\"><div class=\"spa-content__view\">", $html);
+        $html = preg_replace("/<(\s*body[^>]*)>/", "$styles<$1><div class=\"spa-content\" $wp_spa_props><div class=\"spa-content__page $wp_spa_page_class_name\" $wp_spa_page_props><div class=\"spa-content__view\">", $html);
 
         // add closing tags to closing body tag
         $html = preg_replace("/(<\s*\/\s*body\s*\>)/", "</div></div></div>$1", $html);

@@ -1,11 +1,11 @@
 @import "https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css";
-@import "./tooltipster.bundle.css";
-.wpspa-demo {
-  max-width: 15em;
+@import "./tooltipster.bundle.min.css";
+.wpspa-demo .wpspa-demo__content {
   width: 100%;
   margin: 0 auto;
+  max-width: 15em;
 }
-.wpspa-demo .wpspa-demo__view {
+.wpspa-demo .wpspa-demo__content .wpspa-demo__view {
   height: 15em;
   width: 100%;
   position: relative;
@@ -46,17 +46,66 @@
   width: 100%;
 }
 .feedback {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.feedback * {
+  -webkit-box-sizing: inherit;
+  -moz-box-sizing: inherit;
+  box-sizing: inherit;
+}
+.feedback.feedback--visible .feedback__modal {
+  display: table;
+}
+.feedback .feedback__modal {
+  -webkit-animation: fadeIn 400ms ease;
+  animation: fadeIn 400ms ease;
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  position: fixed;
+  top: -1px;
+  right: -1px;
+  bottom: -1px;
+  left: -1px;
+  z-index: 99;
+  background-color: rgba(0,0,0,0.6);
+  display: none;
+  padding: 0.75em;
+  height: 100%;
+}
+.feedback .feedback__wrap {
+  display: table-cell;
+  vertical-align: middle;
+}
+.feedback .feedback__content {
   max-width: 37.5em;
   width: 100%;
   margin: 0 auto;
   text-align: center;
 }
+.feedback .feedback__heading {
+  vertical-align: middle;
+  text-align: center;
+}
+.feedback .feedback__heading * {
+  color: #fff;
+}
 .feedback textarea {
-  height: 5em;
+  height: 10em;
   width: 100%;
 }
+.feedback .button.button--feedback {
+  position: absolute;
+  top: 0.75em;
+  right: 0.75em;
+  z-index: 2;
+}
+.feedback .button.button--close,
 .feedback .button.button--send {
-  margin-top: 1em;
+  vertical-align: middle;
+  margin: 0.75em 0.375em;
 }
 #wp-spa .settings input[type='text'],
 #wp-spa .settings input[type='url'],
@@ -66,19 +115,53 @@
 }
 #wp-spa .settings .settings__content {
   width: 100%;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-flex-wrap: wrap;
-  -ms-flex-wrap: wrap;
-  flex-wrap: wrap;
-  -webkit-box-align: start;
-  -webkit-align-items: flex-start;
-  -ms-align-items: flex-start;
-  align-items: flex-start;
-  max-width: 67.5em;
-  margin: 0 auto;
+}
+#wp-spa .settings input[type='checkbox'] {
+  -webkit-transition-property: background-color;
+  transition-property: background-color;
+  -webkit-transition-duration: 250ms;
+  transition-duration: 250ms;
+  -webkit-transition-timing-function: ease;
+  transition-timing-function: ease;
+  position: relative;
+  width: 5em;
+  height: 2em;
+  border-radius: 24px;
+  background-color: #4d4d4d;
+}
+#wp-spa .settings input[type='checkbox']:before {
+  display: none;
+}
+#wp-spa .settings input[type='checkbox']:after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  background: #fff;
+  -webkit-box-shadow: 0 0 -2px 6px #000;
+  box-shadow: 0 0 -2px 6px #000;
+  left: 0;
+  -webkit-transition-property: left;
+  transition-property: left;
+  -webkit-transition-duration: 250ms;
+  transition-duration: 250ms;
+  -webkit-transition-timing-function: ease;
+  transition-timing-function: ease;
+}
+#wp-spa .settings input:checked {
+  background-color: #0f630f;
+  -webkit-box-shadow: 0 0 6px #000 inset;
+  box-shadow: 0 0 6px #000 inset;
+}
+#wp-spa .settings input:checked#wp_spa_enforceSmooth,
+#wp-spa .settings input:checked#wp_spa_enableCacheBusting,
+#wp-spa .settings input:checked#wp_spa_useScreenClip {
+  background-color: #630c0c;
+}
+#wp-spa .settings input:checked:after {
+  left: calc(100% - 2em);
 }
 #wp-spa .settings .setting-section {
   -webkit-flex: 1 1 auto;
@@ -92,4 +175,31 @@
 }
 #wp-spa .settings .setting-section.setting-section--vars tr > td {
   display: inline-block;
+}
+#wp-spa .settings .conditional {
+  overflow: hidden;
+  -webkit-transition-property: opacity;
+  transition-property: opacity;
+  -webkit-transition-duration: 400ms;
+  transition-duration: 400ms;
+  -webkit-transition-timing-function: ease;
+  transition-timing-function: ease;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=15)";
+  filter: alpha(opacity=15);
+  opacity: 0.15;
+  pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+#wp-spa .settings .conditional.conditional--active {
+  -ms-filter: none;
+  filter: none;
+  opacity: 1;
+  pointer-events: auto;
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
 }

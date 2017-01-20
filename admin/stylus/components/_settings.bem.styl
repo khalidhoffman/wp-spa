@@ -7,11 +7,39 @@
       width 100%;
     /__content
       width 100%
-      display flex
-      flex-wrap wrap
-      align-items flex-start
-      max-width: em-auto(1080)
-      margin 0 auto
+      //display flex
+      //flex-wrap wrap
+      //align-items flex-start
+      //max-width: em-auto(1080)
+      //margin 0 auto
+    input
+      &[type='checkbox']
+        short-transition(background-color)
+        position relative
+        size 5em 2em
+        border-radius 24px
+        background-color lighten($color-black, 30%)
+        &:before
+          display none
+        &:after
+          content ''
+          display block
+          position absolute
+          size 2em;
+          border-radius 50%
+          background $color-white
+          box-shadow 0 0 -2px 6px $color-black
+          left 0
+          short-transition(left)
+      &:checked
+        background-color darken(lightgreen, 70%)
+        box-shadow 0 0 6px $color-black inset
+        &#wp_spa_enforceSmooth,
+        &#wp_spa_enableCacheBusting,
+        &#wp_spa_useScreenClip
+          background-color darken(lightcoral, 70%)
+        &:after
+          left "calc(100% - %s)" %  2em
     .setting-section
       flex 1 1 auto
       &/--demo
@@ -20,3 +48,13 @@
         tr
           > td
             display inline-block
+    .conditional
+      overflow hidden
+      default-transition(opacity);
+      opacity .15
+      pointer-events none
+      user-select none
+      &/--active
+        opacity 1
+        pointer-events auto
+        user-select auto
