@@ -1,14 +1,15 @@
-var $ = require('jquery');
+import * as $ from 'jquery';
 
-/**
- * @class RegisterEntry
- * @param scriptDOMNode
- * @constructor
- */
-function RegisterEntry(scriptDOMNode) {
-    this.meta = {};
-    this.el = scriptDOMNode;
-    this.$el = $(this.el);
+export class RegisterEntry implements IRegisterEntry{
+    meta: any;
+    el: HTMLScriptElement;
+    $el: JQuery<HTMLScriptElement>;
+
+    constructor(scriptDOMNode: HTMLScriptElement) {
+        this.meta = {};
+        this.el = scriptDOMNode;
+        this.$el = $(scriptDOMNode as HTMLElement);
+    }
 }
 
 module.exports = RegisterEntry;

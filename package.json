@@ -25,13 +25,16 @@
   "author": "Khalid Hoffman",
   "license": "ISC",
   "devDependencies": {
+    "@types/history": "^4.7.2",
+    "@types/jquery": "^3.3.29",
+    "@types/node": "^11.13.4",
     "exports-loader": "^0.6.3",
     "expose-loader": "^0.7.1",
-    "gulp-utils": "git+https://github.com/khalidhoffman/gulp-utils.git#dev",
     "imports-loader": "^0.6.5",
     "json-loader": "^0.5.4",
     "raw-loader": "^0.5.1",
     "tooltipster": "^4.1.6",
+    "weblee-utils": "git+https://github.com/webleedev/weblee-utils.git",
     "webpack": "^1.13.2",
     "webpack-bundle-analyzer": "^2.2.1"
   },

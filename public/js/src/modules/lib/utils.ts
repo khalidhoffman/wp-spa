@@ -13,12 +13,12 @@ var url = require('url'),
     siteURLMeta = url.parse(siteURL),
     domParser = new DOMParser();
 
-var utils = {
+export const utils = {
     createCookie: function (name, value, days) {
         if (days) {
             var date = new Date();
             date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            var expires = "; expires=" + date.toGMTString();
+            var expires = "; expires=" + date.toUTCString();
         }
         else var expires = "";
         document.cookie = name + "=" + value + expires + "; path=/";
@@ -39,7 +39,7 @@ var utils = {
         if (days) {
             var date = new Date();
             date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            var expires = "; expires=" + date.toGMTString();
+            var expires = "; expires=" + date.toUTCString();
         }
         else var expires = "";
         document.cookie = name + "=" + value + expires + "; path=/";
@@ -102,7 +102,7 @@ var utils = {
      * @param {Boolean} [options.trailingSlash = true]
      * @returns {String}
      */
-    getRootPath: function (options) {
+    getRootPath: function (options: { trailingSlash: boolean } = { trailingSlash: true }) {
         return siteURLMeta.pathname + ((options && options.trailingSlash === false) ? '' : '/');
     },
 
@@ -115,7 +115,7 @@ var utils = {
      * @returns {string}
      */
     getPathFromUrl: function (requestURL) {
-        var domainUrl = utils.getRootUrl({trailingSlash: false}),
+        var domainUrl = utils.getRootUrl(),
             pathStartIndex = requestURL.indexOf(domainUrl) + domainUrl.length;
         return requestURL.substr(pathStartIndex);
     },
@@ -151,6 +151,7 @@ var utils = {
     getRand: function (min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     },
+    /*
     clearConsole: function () {
         if (typeof console._commandLineAPI !== 'undefined') {
             console.API = console._commandLineAPI; //chrome
@@ -162,18 +163,20 @@ var utils = {
 
         // console.API.clear();
     },
-    defaults: function(){
+    */
+    defaults: function(...args: any[]){
         var idx = 0,
             base = arguments[idx++] || {},
             next,
             key;
-        while (next = arguments[idx++]){
-            for (key in next){
-                if(next.hasOwnProperty(key) && base[key] == undefined){
+        do {
+            next = args[idx++];
+            for (key in next) {
+                if (next.hasOwnProperty(key) && base[key] == undefined) {
                     base[key] = next[key]
                 }
             }
-        }
+        } while (next);
         return base;
     }
 };

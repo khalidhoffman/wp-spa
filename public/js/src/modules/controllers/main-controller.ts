@@ -1,7 +1,7 @@
-var utils = require('utils'),
+var utils = require('modules/lib/utils');
 
-    Module = require('../lib/module'),
-    ScriptRegister = require('../models/dom-node-register');
+import { Module}  from '../lib/module';
+import ScriptRegister = require('../models/dom-node-register');
 
 console.log("require('main-controller')");
 
@@ -10,8 +10,8 @@ console.log("require('main-controller')");
  * @class MainController
  * @constructor
  */
-function MainController() {
-    Module.apply(this, arguments);
+export class MainController extends Module {
+    constructor () {
     var $scope = this,
         self = this;
 
@@ -44,6 +44,7 @@ function MainController() {
             }
         });
     });
+}
 }
 
 MainController.prototype = {};

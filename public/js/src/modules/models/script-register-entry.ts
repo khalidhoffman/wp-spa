@@ -1,24 +1,10 @@
-var utils = require('utils'),
-    RegisterEntry = require('./register-entry');
+import { RegisterEntry } from './register-entry';
 
-/**
- *
- * @extends RegisterEntry
- * @class ScriptRegisterEntry
- * @param scriptDOMNode
- * @constructor
- */
-function ScriptRegisterEntry(scriptDOMNode) {
-    RegisterEntry.apply(this, arguments);
-}
+export class ScriptRegisterEntry extends RegisterEntry {
 
-ScriptRegisterEntry.prototype = {
-
-    getId: function(){
+    getId() {
         return this.el.src || this.$el.html();
     }
-};
-
-utils.defaults(ScriptRegisterEntry.prototype, RegisterEntry.prototype);
+}
 
 module.exports = ScriptRegisterEntry;

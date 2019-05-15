@@ -1,75 +1,83 @@
-var unshift = Array.prototype.unshift,
-    splice = Array.prototype.splice;
 
-function ResourceMonitor(config) {
-    var self = this,
-        config = config || {};
+class ResourceMonitor implements  IResourceMonitor {
+    state: IResourceMonitorState;
+    config: IResourceMonitorConfig;
+    subscriptions: Function[];
+    store: number[];
 
-    this.config = {
-        bufferSize: config.bufferSize || 200,
-        idleFrequency: config.idleFrequency || (1000/ 60) // 50 frames per millisecond
-    };
-    this.state = {
-        isSleeping: true,
-        gcPtr: 0,
-        headPtr: this.config.bufferSize - 1,
-        sum: 0,
-        latest: 0,
-        prev: 0
-    };
-    this.subscriptions = [];
-    this.store = [0]; // for the most recent tick
-    while (self.store.length <= self.config.bufferSize) {
-        self.store.push(0)
+    constructor(config: IResourceMonitorConfig = {}) {
+        this.config = {
+            bufferSize: config.bufferSize || 200,
+            idleFrequency: config.idleFrequency || (1000 / 60) // 50 frames per millisecond
+        };
+        this.state = {
+            isInitialized: false,
+            isSleeping: true,
+            gcPtr: 0,
+            headPtr: this.config.bufferSize - 1,
+            sum: 0,
+            latest: 0,
+            prev: 0,
+            sleepTimeoutId: null
+        };
+        this.subscriptions = [];
+        this.store = [0]; // for the most recent tick
+
+        while (this.store.length <= this.config.bufferSize) {
+            this.store.push(0)
+        }
     }
-    this.onAnimationFrame = this.onAnimationFrame.bind(this);
-}
 
-ResourceMonitor.prototype = {
-    tick: function () {
-        window.requestAnimationFrame(this.onAnimationFrame);
-    },
+    tick() {
+        window.requestAnimationFrame((...args) => {
+            return this.onAnimationFrame(...args)
+        });
+    }
 
-    start: function(){
+    sleep() {
+        this.state.isSleeping = true;
+        this.tick();
+    }
+
+    start() {
         clearTimeout(this.state.sleepTimeoutId);
         this.state.isSleeping = false;
         this.tick();
-    },
+    }
 
-    once: function (callback) {
-        var self = this,
-            subscriptionIdx = this.subscriptions.length ? this.subscriptions.length - 1 : 0;
-        this.subscriptions.push(function () {
+    once(callback) {
+        var subscriptionIdx = this.subscriptions.length ? this.subscriptions.length - 1 : 0;
+        this.subscriptions.push(() => {
             callback();
-            self.subscriptions.splice(subscriptionIdx, 1);
+            this.subscriptions.splice(subscriptionIdx, 1);
         });
         this.start();
-    },
+    }
 
-    onAnimationFrame: function () {
-        var callbackIdx = 0,
-            callback;
+    onAnimationFrame() {
+        let callbackIdx = 0;
+        let callback;
 
-        if (this.isSleeping()){
-            return this.resetStore();
+        if (this.isSleeping()) {
+            return this.reset();
         } else {
             // record timing of latest tick delay
-            this.state.prev = this.state.latest; 
+            this.state.prev = this.state.latest;
             this.state.latest = Date.now();
 
             // calculate and save new delay
             this.store[this.state.headPtr] = this.state.latest - this.state.prev;
 
-            
+
             // update store index references
-            this.state.gcPtr = (this.state.gcPtr+1) % this.config.bufferSize;
-            this.state.headPtr = (this.state.headPtr+1) % this.config.bufferSize;
+            this.state.gcPtr = (this.state.gcPtr + 1) % this.config.bufferSize;
+            this.state.headPtr = (this.state.headPtr + 1) % this.config.bufferSize;
         }
 
-        if (this.isReady()){ 
+        if (this.isReady()) {
 
-            if (!this.state.isInitialized){ 
-                this.state.isInitialized = true; 
+            if (!this.state.isInitialized) {
+                this.state.isInitialized = true;
                 return this.tick()
             }
 
@@ -78,48 +86,45 @@ ResourceMonitor.prototype = {
 
             // subtract old diff from sum
             this.state.sum -= this.store[this.state.gcPtr];
-            
+
             if (this.getSpeed() < this.config.idleFrequency) {
-                while (callback = this.subscriptions[callbackIdx++]) {
-                    callback();
-                }
-            };
+                do {
+                    callback = this.subscriptions[callbackIdx++];
+                    if (callback) {
+                        callback();
+                    }
+                } while (callback)
+            }
         }
 
-        this.hasQueue() ?
-            this.tick()
-            :
-            (function(self){
-                self.state.isSleeping = true;
-                self.tick();
-            })(this);
-    },
+        this.hasQueue() ? this.tick() : this.sleep();
+    }
 
-    getSpeed: function () {
+    getSpeed() {
         return this.state.sum / this.config.bufferSize
-    },
+    }
 
-    isReady: function(){
+    isReady() {
         return this.store[this.state.headPtr] && this.store[this.state.gcPtr];
-    },
+    }
 
-    isSleeping : function(){
+    isSleeping() {
         return this.state.isSleeping;
-    },
+    }
 
-    hasQueue: function(){
+    hasQueue() {
         return this.subscriptions.length > 0
-    },
+    }
 
-    resetStore: function(){
-        this.store = this.store.map(function(){return 0;});
-        this.state.gcPtr = 0; 
-        this.state.headPtr = this.config.bufferSize - 1; 
+    reset() {
+        this.store = this.store.map(() => 0);
+        this.state.gcPtr = 0;
+        this.state.headPtr = this.config.bufferSize - 1;
         this.state.sum = 0;
         this.state.prev = 0;
         this.state.latest = 0;
         this.state.isInitialized = false;
     }
-};
+}
 
 module.exports = ResourceMonitor;

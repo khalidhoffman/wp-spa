@@ -1,24 +1,10 @@
-var utils = require('utils'),
-    RegisterEntry = require('./register-entry');
+import { RegisterEntry } from './register-entry';
 
-/**
- *
- * @extends RegisterEntry
- * @class StyleRegisterEntry
- * @param styleDOMNode
- * @constructor
- */
-function StyleRegisterEntry(styleDOMNode) {
-    RegisterEntry.apply(this, arguments);
-}
+class StyleRegisterEntry extends RegisterEntry {
 
-StyleRegisterEntry.prototype = {
-
-    getId: function(){
+    getId() {
         return this.$el.attr('href') || this.$el.html();
     }
-};
-
-utils.defaults(StyleRegisterEntry.prototype, RegisterEntry.prototype);
+}
 
 module.exports = StyleRegisterEntry;

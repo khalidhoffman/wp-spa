@@ -1,28 +1,40 @@
 var utils = require('utils'),
-    $ = require('jquery'),
+    $ = require('jquery');
 
-    Module = require('../lib/module');
+import { Module } from '../lib/module';
 
 console.log("require('content-service')");
-function ConfigLoader() {
-    Module.apply(this, arguments);
-    this._state = {
-        flag: ''
-    };
 
-    // use defaults for now
-    this._data = this.getDefaults();
-
-    this.configURL = utils.getRootUrl() + '?wp_spa_config=' + Date.now();
+interface IConfigLoaderState {
+    flag: string;
 }
 
-ConfigLoader.prototype = {
+type IConfigLoaderData = any
 
-    getMainSelector: function () {
+type ConfigLoaderCallback = (error: Error | null, self: ConfigLoader, data?: IConfigLoaderData) => any;
+
+export class ConfigLoader extends Module {
+    private _state: IConfigLoaderState;
+    private _data: IConfigLoaderData;
+    configURL: string;
+
+    constructor(app: IApplication) {
+        super(...args);
+        this._state = {
+            flag: ''
+        };
+
+        // use defaults for now
+        this._data = this.getDefaults();
+
+        this.configURL = utils.getRootUrl() + '?wp_spa_config=' + Date.now();
+    }
+
+    getMainSelector(): string {
         return '.spa-content__page';
-    },
+    }
 
-    getDefaults: function () {
+    getDefaults(): IConfigLoaderData {
         return {
             loadingScreenType: 'Icon',
             animationInName: 'pageIn',
@@ -36,9 +48,9 @@ ConfigLoader.prototype = {
             asyncAnimation: 0,
             captureAll: 1
         };
-    },
+    }
 
-    _checkAnimationResource: function (callback) {
+    _checkAnimationResource(callback: ConfigLoaderCallback) {
         var self = this;
         $.ajax({
             method: 'GET',
@@ -48,7 +60,7 @@ ConfigLoader.prototype = {
                 if (callback) callback.call(self);
             }
         })
-    },
+    }
 
     /**
      *
@@ -56,7 +68,7 @@ ConfigLoader.prototype = {
      * @param {Object} [options]
      * @param {Boolean} [options.forceUpdate]
      */
-    fetchConfig: function (callback, options) {
+    fetchConfig(callback: ConfigLoaderCallback, options: { forceUpdate: boolean }) {
         var self = this,
             opts = utils.defaults(options, {});
 
@@ -96,7 +108,7 @@ ConfigLoader.prototype = {
                 });
         }
     }
-};
+}
 
 utils.defaults(ConfigLoader.prototype, Module.prototype);
 

@@ -1,39 +1,41 @@
-var $ = require('jquery'),
-    url = require('url'),
-    utils = require('utils'),
-    Module = require('../lib/module');
+import * as $     from 'jquery';
+import * as url   from 'url';
 
-console.log("require('content-service')");
+import * as utils from '../lib/utils';
+import { Module } from '../lib/module';
 
-function ContentLoader() {
-    Module.apply(this, arguments);
-    this.data = {
-        pages: [],
-        posts: []
-    };
-    this._cache = {};
-    this.downloadSiteMap();
-}
+export class ContentLoader extends Module {
+    data: IContentLoaderDataRegistry;
+    private _cache: IContentLoaderCache;
 
-ContentLoader.prototype = {
-    get: function (path) {
+    constructor(app: IApplication) {
+        super(app);
+        this.data = {
+            pages: [],
+            posts: []
+        };
+        this._cache = {};
+        this.downloadSiteMap();
+    }
+
+    get(path) {
         return this.data[path];
-    },
+    }
 
-    set: function (path, value) {
+    set(path, value) {
         return this.data[path] = value;
-    },
+    }
 
-    isReady: function () {
+    isReady() {
         return this.get('isReady');
-    },
+    }
 
-    preCache: function(idx){
+    preCache(idx) {
         idx = idx || 0;
         var route = this.get('posts')[idx];
-        if (route) this.getHTML(url.parse(route).pathname, {useCache: true});
-        return this.get('posts')[idx + 1] ?  this.preCache(idx+1) : null;
-    },
+        if (route) this.getHTML(url.parse(route).pathname, { useCache: true });
+        return this.get('posts')[idx + 1] ? this.preCache(idx + 1) : null;
+    }
 
     /**
      *
@@ -43,7 +45,7 @@ ContentLoader.prototype = {
      * @param {Boolean} [options.reusePages=false]
      * @param {Function} [options.done]
      */
-    getHTML: function (route, options) {
+    getHTML(route, options) {
         var self = this,
             opts = utils.defaults(options, {});
         if (opts.useCache && self._cache[route]) {
@@ -67,13 +69,14 @@ ContentLoader.prototype = {
                 }
             });
         }
-    },
+    }
+
     /**
      *
      * @param {Object} [options]
      * @param {Function} [options.done]
      */
-    downloadSiteMap: function (options) {
+    downloadSiteMap(options?: { done?: Function }) {
         var self = this,
             _options = utils.defaults(options, {
                 context: self
@@ -87,8 +90,8 @@ ContentLoader.prototype = {
             success: function (response) {
                 var siteMap = response;
                 console.log('WordPress downloaded sitemap data: ', siteMap);
-                for(var postType in siteMap){
-                    if (siteMap.hasOwnProperty(postType)){
+                for (var postType in siteMap) {
+                    if (siteMap.hasOwnProperty(postType)) {
                         switch (postType) {
                             case 'page':
                                 self.set('pages', siteMap[postType]);
@@ -104,12 +107,12 @@ ContentLoader.prototype = {
                 if (_options.done) _options.done.call(_options.context);
             },
             failure: function (response) {
-                var siteMapFetchError = new Error("Could not fetch sitemap");
+                var siteMapFetchError = new Error('Could not fetch sitemap');
                 console.error(siteMapFetchError);
                 if (_options.done) _options.done.call(_options.context, siteMapFetchError, response);
             }
         });
-    },
+    }
 
     /**
      *
@@ -118,7 +121,7 @@ ContentLoader.prototype = {
      * @param {Function} [options.done]
      * @returns {[String]}
      */
-    getPages: function (options) {
+    getPages(options?: { done?: Function, context?: any }) {
         var _options = utils.defaults(options, {});
         if (this.isReady()) {
             _options.done.call(_options.context, this.get('pages'))
@@ -127,7 +130,7 @@ ContentLoader.prototype = {
                 _options.done.call(_options.context, this.get('pages'))
             });
         }
-    },
+    }
 
     /**
      *
@@ -135,7 +138,7 @@ ContentLoader.prototype = {
      * @param {Function} [options.done]
      * @returns {[String]}
      */
-    getPosts: function (options) {
+    getPosts(options?: { done?: Function }) {
         var _options = utils.defaults(options, {});
         if (this.isReady()) {
             _options.done.call(_options.context, this.get('pages'))
@@ -144,7 +147,7 @@ ContentLoader.prototype = {
                 _options.done.call(_options.context, this.get('pages'))
             });
         }
-    },
+    }
 
     /**
      *
@@ -152,18 +155,18 @@ ContentLoader.prototype = {
      * @param {Object} [options]
      * @param {Function} [options.done]
      */
-    hasPage: function (url, options) {
+    hasPage(url: string, options?: { done?: Function }) {
         this.verify('pages', url, options);
-    },
+    }
 
     /**
      *
      * @param requestedURL
      * @returns {boolean}
      */
-    hasPageSync: function (requestedURL) {
+    hasPageSync(requestedURL: string): boolean {
         return this.get('pages').indexOf(requestedURL) >= 0;
-    },
+    }
 
     /**
      *
@@ -171,23 +174,23 @@ ContentLoader.prototype = {
      * @param {Object} [options]
      * @param {Function} [options.done]
      */
-    hasPost: function (url, options) {
+    hasPost(url: string, options?: { done?: Function }) {
         this.verify('posts', url, options);
-    },
+    }
 
     /**
      *
      * @param requestedURL
      * @returns {boolean}
      */
-    hasPostSync: function (requestedURL) {
+    hasPostSync(requestedURL) {
         return this.get('posts').indexOf(requestedURL) >= 0;
-    },
+    }
 
-    verify: function (type, url, options) {
-        var self = this,
-            _options = utils.defaults(options, {}),
-            verificationMethod = this['get' + type[0].toUpperCase() + type.substr(1)];
+    verify(type: string, url: string, options?: { done?: Function }) {
+        const self = this;
+        const _options = utils.defaults(options, {});
+        const verificationMethod = this['get' + type[0].toUpperCase() + type.substr(1)];
 
         verificationMethod.call(this, {
             done: function (urls) {
@@ -196,8 +199,6 @@ ContentLoader.prototype = {
             }
         });
     }
-};
-
-utils.defaults(ContentLoader.prototype, Module.prototype);
+}
 
 module.exports = ContentLoader;
