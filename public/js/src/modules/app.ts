@@ -1,11 +1,11 @@
-import Router          from 'modules/lib/router';
-import ResourceMonitor from 'modules/services/resource-monitor';
-import { ConfigLoader }    from 'modules/services/config-loader';
-import { ContentLoader }   from 'modules/services/content-loader';
-import Controllers     from 'modules/controllers';
-import Views           from 'modules/views';
+import Router            from 'modules/lib/router';
+import ResourceMonitor   from 'modules/services/resource-monitor';
+import { ConfigLoader }  from 'modules/services/config-loader';
+import { ContentLoader } from 'modules/services/content-loader';
+import * as Controllers  from 'modules/controllers';
+import Views             from 'modules/views';
 
-class Application implements IApplication {
+export class Application implements IApplication {
   events = {};
   $root: JQuery;
   $window: JQuery<Window>;
@@ -37,7 +37,7 @@ class Application implements IApplication {
       this.previousPath = path;
     });
 
-    this.mainController = new Controllers.Main(this);
+    this.mainController = new Controllers.MainController(this);
     this.uiController = new Controllers.UI(this);
     this.htmlView = new Views.Html(this);
     this.headView = new Views.Head(this);

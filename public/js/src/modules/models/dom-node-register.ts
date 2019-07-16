@@ -1,5 +1,5 @@
-class NodeRegister {
-    registry: IRegisteEntry[];
+export class NodeRegister {
+    registry: IRegisterEntry[];
 
     constructor() {
         this.registry = [];
@@ -9,10 +9,10 @@ class NodeRegister {
      *
      * @param {RegisterEntry} regEntry
      */
-    contains(regEntry: IRegisteEntry) {
-        const result = false;
+    contains(regEntry: IRegisterEntry) {
         const regEntryId = regEntry.getId();
-        const idx = 0;
+        let result = false;
+        let idx = 0;
 
         while (this.registry[idx] && !result) {
             if (this.registry[idx].getId() == regEntryId) {
@@ -35,4 +35,4 @@ class NodeRegister {
     }
 }
 
-module.exports = NodeRegister;
+export default NodeRegister;

@@ -5,6 +5,7 @@ interface IApplicationMeta {
 interface IContentLoaderDataRegistry {
     pages: any[];
     posts: any[];
+    isReady?: boolean;
 }
 
 interface IContentLoaderCache {
@@ -68,7 +69,10 @@ interface IResourceMonitor {
     store: number[];
 }
 
-interface IModule<DOMElement = (HTMLElement | Window), Meta = any> {
+type IModuleMeta<T = any> = T;
+type IModuleElement = HTMLElement | Window;
+
+interface IModule<DOMElement = IModuleElement, Meta = IModuleMeta> {
     meta: Meta;
     $window: JQuery<DOMElement>;
     $root: JQuery<DOMElement>;
@@ -90,3 +94,10 @@ interface IApplication extends IModule {
     previousPath: string;
 
 }
+
+interface IConfigLoaderState {
+    flag: string;
+}
+
+type IConfigLoaderData = any
+

@@ -7,4 +7,4 @@ export class ScriptRegisterEntry extends RegisterEntry {
     }
 }
 
-module.exports = ScriptRegisterEntry;
+export default ScriptRegisterEntry;

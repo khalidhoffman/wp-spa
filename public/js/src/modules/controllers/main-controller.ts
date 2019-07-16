@@ -1,9 +1,11 @@
+import { Application } from 'modules/app';
+
 var utils = require('modules/lib/utils');
 
-import { Module}  from '../lib/module';
-import ScriptRegister = require('../models/dom-node-register');
+import { Module } from '../lib/module';
+import { NodeRegister } from 'modules/models/dom-node-register';
 
-console.log("require('main-controller')");
+console.log('require(\'main-controller\')');
 
 /**
  * @extends Module
@@ -11,44 +13,49 @@ console.log("require('main-controller')");
  * @constructor
  */
 export class MainController extends Module {
-    constructor () {
-    var $scope = this,
-        self = this;
+  config: IConfigLoaderData;
+  scriptRegister: NodeRegister = new NodeRegister();
 
-    console.log('mainController(%O)', arguments);
+  constructor(public app: Application) {
+    super(app);
+
     this.config = this.configLoader.getDefaults();
-    this.scriptRegister = new ScriptRegister();
+    this.init();
+  }
 
-    this.configLoader.fetchConfig(function (err, configData) {
-        self.config = configData || self.config;
-    });
-    $scope.$on('$locationChangeSuccess', function (event, to, from) {
-        if (to == from) return;
-        utils.clearConsole();
-        console.log('route: %o', arguments);
+  async init(): Promise<void> {
+    await this.configLoader.fetchConfig((err, configData) => {
+      this.config = configData || this.config;
+
+      this.$on('$locationChangeSuccess', (event, to, from) => {
+        console.log('route: %o', event, to, from);
+
+        if (to == from) {
+          return;
+        }
+
         console.log('mainController.$locationChangeSuccess() - routing to %o', to);
-        $scope.contentLoader.getHTML(to, {
-            useCache: self.config.useCache,
-            reusePages: self.config.reusePages,
-            done: function (err, $DOM) {
-                if (err) {
-                    console.warn(err);
-                } else {
-                    var data = {
-                        $DOM: $DOM
-                    };
-                    console.log('mainController.$locationChangeSuccess() - update');
-                    $scope.$broadcast("view:update", data);
-                    $scope.$window.trigger('view:update', data);
-                }
+
+        this.contentLoader.getHTML(to, {
+          useCache: this.config.useCache,
+          reusePages: this.config.reusePages,
+          done: (err, $DOM) => {
+            if (err) {
+              console.warn(err);
+              return;
             }
+
+            const data = { $DOM };
+
+            console.log('mainController.$locationChangeSuccess() - update');
+
+            this.$broadcast('view:update', data);
+            this.$window.trigger('view:update', data);
+          }
         });
+      });
     });
+  }
 }
-}
-
-MainController.prototype = {};
-
-utils.defaults(MainController.prototype, Module.prototype);
 
 module.exports = MainController;

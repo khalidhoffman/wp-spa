@@ -1,46 +1,36 @@
-var $ = require('jquery'),
+import $ from 'jquery';
 
-    utils = require('utils'),
-    Module = require('../lib/module');
 
-console.log('head.controller(%O)', arguments);
+import { Module }      from 'modules/lib/module';
+import { Application } from 'modules/app';
 
-/**
- * @class HeadDirective
- * @constructor
- */
-function HeadDirective(){
-    Module.apply(this, arguments);
-    var $scope = this,
-        $element = $('head');
+export class HeadDirective extends Module {
+  $element: JQuery<HTMLElement>;
 
-    this.$element = $element;
+  constructor(public app: Application) {
+    super(app);
 
-    $scope.$on('html:update', function (event, data) {
-        var $DOM = data.$DOM;
-        console.log("head.link()$scope.$on('view:update')");
-        var $head = $DOM.find('head'),
-            $newStyles = data.new.$styles;
+    this.$element = $('head');
 
-        // $oldScripts.remove();
+    this.$on('html:update', (event, data) => {
+      const $DOM = data.$DOM;
+      const $head = $DOM.find('head');
+      const $newStyles = data.new.$styles;
 
-        // add new styles to incoming head
-        $head.append($newStyles);
+      // $oldScripts.remove();
 
-        // update meta
-        $element.find('meta').remove();
-        $element.prepend($head.find('meta'));
-        $element.find('title').remove();
-        $element.prepend($head.find('title'));
+      // add new styles to incoming head
+      $head.append($newStyles);
 
-        $scope.$broadcast('head:update', data)
+      // update meta
+      this.$element.find('meta').remove();
+      this.$element.prepend($head.find('meta'));
+      this.$element.find('title').remove();
+      this.$element.prepend($head.find('title'));
+
+      this.$broadcast('head:update', data)
     });
+  }
+
+
 }
-
-HeadDirective.prototype = {
-
-};
-
-utils.defaults(HeadDirective.prototype, Module.prototype);
-
-module.exports = HeadDirective;
