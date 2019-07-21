@@ -1,5 +1,5 @@
 
-class ResourceMonitor implements  IResourceMonitor {
+export class ResourceMonitor implements  IResourceMonitor {
     state: IResourceMonitorState;
     config: IResourceMonitorConfig;
     subscriptions: Function[];
@@ -29,9 +29,7 @@ class ResourceMonitor implements  IResourceMonitor {
     }
 
     tick() {
-        window.requestAnimationFrame((...args) => {
-            return this.onAnimationFrame(...args)
-        });
+        window.requestAnimationFrame(() => this.onAnimationFrame());
     }
 
     sleep() {
@@ -126,5 +124,3 @@ class ResourceMonitor implements  IResourceMonitor {
         this.state.isInitialized = false;
     }
 }
-
-module.exports = ResourceMonitor;

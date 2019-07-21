@@ -1,49 +1,52 @@
-var utils = require("utils"),
-    Module = require('modules/lib/module');
+import * as utils  from 'modules/lib/utils';
 
-/**
- * @param {Object} [options]
- * @param {String} [options.indicatorType]
- * @param {String} [options.indicatorColor]
- * @constructor
- */
-function LoadingView(options) {
-    this.$loadingView = $(require("raw!./../views/html/loading-view.html"));
-    this.$loadingIcon = this.$loadingView.find('.wp-spa-loading-view__icon');
-    this.$loadingBar = this.$loadingView.find('.wp-spa-loading-view__progress-bar');
-    this.config = utils.defaults(options, {
-        loadingClassName: 'wp-spa-loading-view--loading',
-        indicatorType: 'indeterminate',
-        indicatorColor: ''
-    });
-    this.$loadingView.addClass('wp-spa-loading-view--' + this.config.indicatorType);
-    this.state = {
-        hasLoaded: false,
-        progress: 0
-    };
-}
 
-LoadingView.prototype = {
+export class LoadingView {
+    $loadingView: JQuery<any>;
+    $loadingIcon: JQuery<any>;
+    $loadingBar: JQuery<any>;
+    $indicator: JQuery<any>;
+
+    config: { loadingClassName: string, indicatorType: 'indeterminate' | string, indicatorColor: string };
+    state: { hasLoaded: boolean; progress: number; autoIncrementTimeoutId?: NodeJS.Timeout };
+
+    constructor(options?) {
+        this.$loadingView = $(require('raw!./../views/html/loading-view.html'));
+        this.$loadingIcon = this.$loadingView.find('.wp-spa-loading-view__icon');
+        this.$loadingBar = this.$loadingView.find('.wp-spa-loading-view__progress-bar');
+        this.config = utils.defaults(options, {
+            loadingClassName: 'wp-spa-loading-view--loading',
+            indicatorType: 'indeterminate',
+            indicatorColor: ''
+        });
+        this.$loadingView.addClass('wp-spa-loading-view--' + this.config.indicatorType);
+        this.state = {
+            hasLoaded: false,
+            progress: 0
+        };
+
+    }
+
 
     /**
      *
      * @param {Number} amount
      */
-    show: function (amount) {
+    show (amount) {
         this.$loadingView.addClass(this.config.loadingClassName);
         if (this.config.indicatorType == 'progress' && (amount === 0 || amount > 0)) this.setLoadingProgress(amount);
-    },
+    }
 
-    reset: function(){
+    reset(){
         this.state.progress = 0;
         this.state.hasLoaded = false;
         this.$loadingView.removeClass(this.config.loadingClassName);
         this.$loadingBar.css({
             'opacity': ''
         });
-    },
+    }
 
-    setLoadingProgress: function (amount) {
+    setLoadingProgress (amount) {
         var self = this;
 
         if (!this.state.progress) {
@@ -75,9 +78,9 @@ LoadingView.prototype = {
                 break;
         }
 
-    },
+    }
 
-    hide: function () {
+    hide () {
         if (this.config.indicatorType == 'progress') {
             this.setLoadingProgress(100);
         } else {
@@ -89,15 +92,13 @@ LoadingView.prototype = {
                 self.$loadingView.removeClass(self.config.loadingClassName);
             }, 650);
         }
-    },
+    }
 
-    appendTo: function ($body) {
+    appendTo ($body) {
         this.$indicator = this.config.indicatorType == 'progress' ? this.$loadingBar : this.$loadingIcon;
         this.$indicator.css({
             'background-color': this.config.indicatorColor
         });
         $body.append(this.$loadingView);
     }
-};
-
-module.exports = LoadingView;
+}

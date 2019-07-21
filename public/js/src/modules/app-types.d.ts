@@ -1,3 +1,18 @@
+
+interface ICSSConfig {
+    selector: string;
+    styles: { [key: string]: string };
+}
+
+type IPrependCSSArgs = string | Array<ICSSConfig>;
+
+interface JQuery {
+    useScreenClip(): JQuery;
+    prependedCSS(cssConfig: IPrependCSSArgs): void;
+    oneTimeout(event: string, callback: Function, duration: number): void;
+    oneDelayedTimeout(event: string, callback: Function, duration: number): void;
+}
+
 interface IApplicationMeta {
     baseHREF: string;
 }
@@ -96,8 +111,22 @@ interface IApplication extends IModule {
 }
 
 interface IConfigLoaderState {
-    flag: string;
+    flag: 'normal' | 'default-only' | 'update-only' | 'loaded';
 }
 
-type IConfigLoaderData = any
+interface IConfigLoaderData {
+    loadingScreenType: string;
+    animationInName: string;
+    animationOutName: string;
+    animationInDuration: number;
+    animationOutDuration: number;
+    reusePages: number;
+    useCache: number;
+    useScreenClip: number;
+    showLoadingScreen: number;
+    asyncAnimation: number;
+    captureAll: number;
+    enforceSmooth?: number;
+    timeout?: number;
+}
 

@@ -1,10 +1,8 @@
 import { RegisterEntry } from './register-entry';
 
-export class ScriptRegisterEntry extends RegisterEntry {
+export class ScriptRegisterEntry extends RegisterEntry implements IRegisterEntry {
 
-    getId() {
+    getId(): string {
         return this.el.src || this.$el.html();
     }
 }
-
-export default ScriptRegisterEntry;

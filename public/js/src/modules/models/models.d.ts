@@ -4,5 +4,5 @@ interface IRegisterEntry {
     el: HTMLScriptElement;
     $el: JQuery<HTMLScriptElement>;
 
-    getId?(): number;
+    getId?(): string;
 }

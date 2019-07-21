@@ -1,7 +1,7 @@
-var url = require('url');
+import * as url from 'url';
 
 
-class Router implements IRouter  {
+export class AppRouter implements IRouter  {
     base: string;
     history: IRouterHistory;
     routes: IRouterHandler[];
@@ -11,10 +11,11 @@ class Router implements IRouter  {
         this.base = base;
         this.routes = [];
         this.history.Adapter.bind(window, 'statechange', () => {
-            var state = this.history.getState(),
-                path = state.data.path,
-                routeHandlerIdx = 0,
-                routeHandler = this.routes[routeHandlerIdx];
+            const state = this.history.getState();
+            const path = state.data.path;
+            let routeHandlerIdx = 0;
+            let routeHandler = this.routes[routeHandlerIdx];
+
             console.log('statechange:', state);
             while (routeHandler) {
                 if (routeHandler.path.test(path)) {
@@ -37,5 +38,3 @@ class Router implements IRouter  {
         this.history.pushState({path: path}, null, url.resolve(this.base, path));
     }
 }
-
-module.exports = Router;

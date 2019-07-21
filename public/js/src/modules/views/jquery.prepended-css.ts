@@ -1,20 +1,20 @@
-var $ = require('jquery');
+import $ from 'jquery';
 
+$.fn.prependedCSS = function (op: IPrependCSSArgs): void {
+    if (Array.isArray(op)){
+        let css  = '';
 
-$.fn.prependedCSS = function(op){
-    if (op.constructor === Array){
-        var css  = '';
         op.forEach(function(cssStyle){
             css += cssStyle.selector + "{";
-            for (var propName in cssStyle.styles){
+            for (let propName in cssStyle.styles){
                 if (cssStyle.styles.hasOwnProperty(propName)){
                     css += propName + ':' + cssStyle.styles[propName] + ';';
                 }
             }
             css += "}";
         });
-        var styles = "<style>" + css + "</style>";
-        this.$styles = $(styles);
+
+        this.$styles = $("<style>" + css + "</style>");
         this.prepend(this.$styles);
     } else {
         switch(op) {

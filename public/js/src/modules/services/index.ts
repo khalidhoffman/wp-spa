@@ -1,7 +1,3 @@
-console.log("require('modules/services/index')");
-
-module.exports = {
-    ResourceMonitor: require('modules/services/config-loader'),
-    ConfigLoader: require('modules/services/config-loader'),
-    ContentLoader: require('modules/services/content-loader')
-};
+export * from 'modules/services/resource-monitor';
+export * from 'modules/services/config-loader';
+export * from 'modules/services/content-loader';

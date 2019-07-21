@@ -4,6 +4,12 @@ import * as url from 'url';
 import * as utils      from '../lib/utils';
 import { Module }      from '../lib/module';
 import { Application } from 'modules/app';
+import { capitalize }  from '../lib/utils';
+
+interface ICallbackOptions {
+  done?: Function;
+  context?: any;
+}
 
 export class ContentLoader extends Module {
   data: IContentLoaderDataRegistry = {
@@ -51,22 +57,22 @@ export class ContentLoader extends Module {
    * @param {Function} [options.done]
    */
   async getHTML(route, options) {
-    var self = this,
-      opts = utils.defaults(options, {});
-    if (opts.useCache && self._cache[route]) {
-      var $DOM = opts.reusePages ? self._cache[route] : self._cache[route].clone();
+    const opts = utils.defaults(options, {});
+
+    if (opts.useCache && this._cache[route]) {
+      var $DOM = opts.reusePages ? this._cache[route] : this._cache[route].clone();
       console.log('spaContent._cache[%s] = (%O)', route, $DOM);
       if (opts.done) opts.done.call(null, null, $DOM);
     } else {
       await $.ajax({
-        url: /^http/.test(route) ? route : url.resolve(self.meta.baseHREF, route),
+        url: /^http/.test(route) ? route : url.resolve(this.meta.baseHREF, route),
         success: (response) => {
           console.log('spaContent.$http.get.success(%O)', response);
           const _DOM = document.createElement('html');
           _DOM.innerHTML = response;
           const $DOM = $(_DOM);
           if (opts.useCache) {
-            self._cache[route] = $DOM;
+            this._cache[route] = $DOM;
           }
           if (opts.done) {
             opts.done.call(null, null, opts.reusePages ? $DOM : $DOM.clone());
@@ -86,10 +92,9 @@ export class ContentLoader extends Module {
    * @param {Object} [options]
    * @param {Function} [options.done]
    */
-  async downloadSiteMap(options?: { done?: Function }) {
-    var self = this,
-      _options = utils.defaults(options, {
-        context: self
+  async downloadSiteMap(options?: ICallbackOptions) {
+    var _options = utils.defaults(options, {
+        context: this
       }),
       siteMapURL = utils.getRootUrl() + '?wp_spa_sitemap';
 
@@ -103,16 +108,16 @@ export class ContentLoader extends Module {
           if (siteMap.hasOwnProperty(postType)) {
             switch (postType) {
               case 'page':
-                self.set('pages', siteMap[postType]);
+                this.set('pages', siteMap[postType]);
                 break;
               default:
-                self.set('posts', siteMap[postType]);
+                this.set('posts', siteMap[postType]);
             }
           }
         }
-        //console.log('WordPress processed sitemap data: ', self);
-        self.set('isReady', true);
-        self.$broadcast('wordpress:init');
+        //console.log('WordPress processed sitemap data: ', this);
+        this.set('isReady', true);
+        this.$broadcast('wordpress:init');
         if (_options.done) _options.done.call(_options.context);
       },
       error: (response) => {
@@ -134,7 +139,7 @@ export class ContentLoader extends Module {
    * @param {Function} [options.done]
    * @returns {[String]}
    */
-  getPages(options?: { done?: Function, context?: any }) {
+  getPages(options?: ICallbackOptions) {
     var _options = utils.defaults(options, {});
     if (this.isReady()) {
       _options.done.call(_options.context, this.get('pages'))
@@ -151,7 +156,7 @@ export class ContentLoader extends Module {
    * @param {Function} [options.done]
    * @returns {[String]}
    */
-  getPosts(options?: { done?: Function }) {
+  getPosts(options?: ICallbackOptions) {
     var _options = utils.defaults(options, {});
     if (this.isReady()) {
       _options.done.call(_options.context, this.get('pages'))
@@ -168,7 +173,7 @@ export class ContentLoader extends Module {
    * @param {Object} [options]
    * @param {Function} [options.done]
    */
-  hasPage(url: string, options?: { done?: Function }) {
+  hasPage(url: string, options?: ICallbackOptions) {
     this.verify('pages', url, options);
   }
 
@@ -178,7 +183,7 @@ export class ContentLoader extends Module {
    * @returns {boolean}
    */
   hasPageSync(requestedURL: string): boolean {
-    return this.get('pages').indexOf(requestedURL) >= 0;
+    return this.get('pages').includes(requestedURL);
   }
 
   /**
@@ -187,7 +192,7 @@ export class ContentLoader extends Module {
    * @param {Object} [options]
    * @param {Function} [options.done]
    */
-  hasPost(url: string, options?: { done?: Function }) {
+  hasPost(url: string, options?: ICallbackOptions) {
     this.verify('posts', url, options);
   }
 
@@ -196,22 +201,22 @@ export class ContentLoader extends Module {
    * @param requestedURL
    * @returns {boolean}
    */
-  hasPostSync(requestedURL) {
-    return this.get('posts').indexOf(requestedURL) >= 0;
+  hasPostSync(requestedURL: string) {
+    return this.get('posts').includes(requestedURL);
   }
 
-  verify(type: string, url: string, options?: { done?: Function }) {
-    const self = this;
+  verify(type: string, url: string, options?: ICallbackOptions) {
     const _options = utils.defaults(options, {});
-    const verificationMethod = this['get' + type[0].toUpperCase() + type.substr(1)];
+    const verificationMethodName = 'get' + capitalize(type);
+    const verificationMethod = this[verificationMethodName];
 
-    verificationMethod.call(this, {
+    verificationMethod({
       done: (urls) => {
-        var requestedUrl = utils.sanitizeUrl(url);
-        if (_options.done) _options.done.call(_options.context, urls.indexOf(requestedUrl) >= 0);
+        const requestedUrl = utils.sanitizeUrl(url);
+        if (_options.done) {
+          _options.done.call(_options.context, urls.indexOf(requestedUrl) >= 0);
+        }
       }
     });
   }
 }
-
-module.exports = ContentLoader;

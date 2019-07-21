@@ -165,7 +165,7 @@ export function getRand(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function defaults(...args: any[]) {
+export function defaults<T = any>(...args: Array<Partial<T>>): T {
   let idx = 0;
   let base = arguments[idx++] || {};
   let next;
@@ -180,4 +180,8 @@ export function defaults(...args: any[]) {
     }
   } while (next);
   return base;
+}
+
+export function capitalize(text: string) {
+  return text[0].toUpperCase() + text.substr(1);
 }

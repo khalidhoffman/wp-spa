@@ -4,7 +4,7 @@ import { Application } from 'modules/app';
 import { Module }      from '../lib/module';
 import * as utils      from 'modules/lib/utils';
 
-export type ConfigLoaderCallback = (error: Error | null, self: ConfigLoader, data?: IConfigLoaderData) => any;
+export type ConfigLoaderCallback = (error: Error | null, data?: IConfigLoaderData) => any;
 
 export class ConfigLoader extends Module {
   private _state: IConfigLoaderState;
@@ -14,7 +14,7 @@ export class ConfigLoader extends Module {
   constructor(app: Application) {
     super(app);
     this._state = {
-      flag: ''
+      flag: undefined
     };
 
     // use defaults for now
@@ -94,15 +94,15 @@ export class ConfigLoader extends Module {
 
             // hotfix to check for valid config
             if (callback) {
-              const callbackData = this._data.animationInName ? this._data : this.getDefaults()
-              callback(null, this, callbackData);
+              const callbackData = this._data.animationInName ? this._data : this.getDefaults();
+              callback(null, callbackData);
             }
           },
           error: (response) => {
             console.error('response: %o', response);
 
             if (callback) {
-              callback(new Error('Could not fetch config'), this);
+              callback(new Error('Could not fetch config'), null);
             }
           }
         });

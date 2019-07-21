@@ -1,20 +1,25 @@
-import Router            from 'modules/lib/router';
-import ResourceMonitor   from 'modules/services/resource-monitor';
-import { ConfigLoader }  from 'modules/services/config-loader';
-import { ContentLoader } from 'modules/services/content-loader';
-import * as Controllers  from 'modules/controllers';
-import Views             from 'modules/views';
+import { AppRouter }       from 'modules/lib/router';
+import { ResourceMonitor } from 'modules/services/resource-monitor';
+import { ConfigLoader }    from 'modules/services/config-loader';
+import { ContentLoader }   from 'modules/services/content-loader';
+import * as Controllers    from 'modules/controllers';
+import * as Views          from 'modules/views';
 
 export class Application implements IApplication {
   events = {};
   $root: JQuery;
   $window: JQuery<Window>;
   meta: IApplicationMeta;
-  configLoader: IConfigLoader;
-  contentLoader: IContentLoader;
-  resourceMonitor: IResourceMonitor;
-  router: IRouter;
+  configLoader: ConfigLoader;
+  contentLoader: ContentLoader;
+  resourceMonitor: ResourceMonitor;
+  router: AppRouter;
   previousPath: string;
+
+  uiController: Controllers.UIController;
+  mainController: Controllers.MainController;
+  htmlView: Views.HTMLDirective;
+  headView: Views.HeadDirective;
 
   constructor() {
 
@@ -24,13 +29,12 @@ export class Application implements IApplication {
       baseHREF: $('head base').attr('href')
     };
 
-    this.;
 
     this.resourceMonitor = new ResourceMonitor();
     this.configLoader = new ConfigLoader(this);
     this.contentLoader = new ContentLoader(this);
 
-    this.router = new Router(this.meta.baseHREF);
+    this.router = new AppRouter(this.meta.baseHREF);
 
     this.router.on(/.*/, (path) => {
       this.emit('$locationChangeSuccess', path, this.previousPath);
@@ -38,34 +42,16 @@ export class Application implements IApplication {
     });
 
     this.mainController = new Controllers.MainController(this);
-    this.uiController = new Controllers.UI(this);
-    this.htmlView = new Views.Html(this);
-    this.headView = new Views.Head(this);
+    this.uiController = new Controllers.UIController(this);
+    this.htmlView = new Views.HTMLDirective(this);
+    this.headView = new Views.HeadDirective(this);
   }
 
-  $timeout(callback, wait) {
+  $timeout(callback: Function, wait?: number) {
     if (window.requestAnimationFrame) {
-      window.requestAnimationFrame(callback)
+      window.requestAnimationFrame(callback as FrameRequestCallback)
     } else {
       callback();
-    }
-  }
-
-  extendModule(module) {
-    const extendedProps = [
-      '$timeout',
-      '$window',
-      '$root',
-      'meta',
-      'resourceMonitor',
-      'configLoader',
-      'contentLoader',
-      'router'
-    ];
-    const propsLength = extendedProps.length;
-
-    for (let propIdx = 0; propIdx < propsLength; propIdx++) {
-      module[extendedProps[propIdx]] = this[extendedProps[propIdx]];
     }
   }
 
@@ -86,6 +72,24 @@ export class Application implements IApplication {
       listener.callback.apply(listener.context, arguments);
       listenerIdx++;
       listener = listeners[listenerIdx];
+    }
+  }
+
+  extendModule(module) {
+    const extendedProps = [
+      '$timeout',
+      '$window',
+      '$root',
+      'meta',
+      'resourceMonitor',
+      'configLoader',
+      'contentLoader',
+      'router'
+    ];
+    const propsLength = extendedProps.length;
+
+    for (let propIdx = 0; propIdx < propsLength; propIdx++) {
+      module[extendedProps[propIdx]] = this[extendedProps[propIdx]];
     }
   }
 

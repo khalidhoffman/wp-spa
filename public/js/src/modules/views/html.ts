@@ -1,99 +1,100 @@
-var $ = require('jquery'),
+import $ from 'jquery';
 
-    utils = require('utils'),
-    Module = require('../lib/module'),
-    DOMNodeRegister = require('../models/dom-node-register'),
-    ScriptRegisterEntry = require('../models/script-register-entry'),
-    StyleRegisterEntry = require('../models/style-register-entry');
+import { Application }         from 'modules/app';
+import * as utils              from 'modules/lib/utils';
+import { Module }              from 'modules/lib/module';
+import { DOMNodeRegister }     from 'modules/models/dom-node-register';
+import { ScriptRegisterEntry } from 'modules/models/script-register-entry';
+import { StyleRegisterEntry }  from 'modules/models/style-register-entry';
+
 
 /**
  * @extends Module
  * @class HTMLDirective
  * @constructor
  */
-function HTMLDirective() {
-    Module.apply(this, arguments);
-    var $scope = this,
-        $element = $('html');
+export class HTMLDirective extends Module {
+    selectors: { [key: string]: string };
+    scriptRegister: DOMNodeRegister;
+    styleRegister: DOMNodeRegister;
+    $element: JQuery<HTMLHtmlElement>;
 
-    this.$element = $element;
-    $scope.selectors = {
-        script: 'script',
-        style: "link[rel='stylesheet'], style",
-        spaScript: '[src*="wp-spa-public"]'
-    };
+    constructor(app: Application) {
+        super(app);
+        this.$element = $('html') as JQuery<HTMLHtmlElement>;
+        this.selectors = {
+            script: 'script',
+            style: "link[rel='stylesheet'], style",
+            spaScript: '[src*="wp-spa-public"]'
+        };
 
-    $scope.scriptRegister = new DOMNodeRegister();
-    $scope.styleRegister = new DOMNodeRegister();
+        this.scriptRegister = new DOMNodeRegister();
+        this.styleRegister = new DOMNodeRegister();
 
-    $scope.registerScripts($element.find('script'));
-    $scope.registerStyles($element.find($scope.selectors.style));
+        this.registerScripts(this.$element.find('script'));
+        this.registerStyles(this.$element.find(this.selectors.style));
 
-    $scope.formatDOM($element, {ignore: $scope.selectors.spaScript});
+        this.formatDOM(this.$element, {ignore: this.selectors.spaScript});
 
-    $scope.$on('view:update', function (event, data) {
-        var $DOM = data.$DOM;
+        this.$on('view:update', (event, data) => {
+            const $DOM = data.$DOM;
 
-        $scope.formatDOM($DOM, {remove: $scope.selectors.spaScript});
+            this.formatDOM($DOM, { remove: this.selectors.spaScript });
 
-        var $styles = $DOM.find($scope.selectors.style),
-            $scripts = $DOM.find($scope.selectors.script);
+            const $styles = $DOM.find(this.selectors.style);
+            const $scripts = $DOM.find(this.selectors.script);
 
-        $scripts.each(function (index, el) {
-            var scriptRegEntry = new ScriptRegisterEntry(el);
-            if ($scope.scriptRegister.contains(scriptRegEntry)) {
-                scriptRegEntry.$el.attr('data-spa-loaded', true);
-                console.log('ng.html - excluding %o', el)
-            } else {
-                $scope.scriptRegister.add(scriptRegEntry);
-                console.warn('ng.html - adding %o', el)
-            }
+            $scripts.each((index, el) => {
+                var scriptRegEntry = new ScriptRegisterEntry(el);
+                if (this.scriptRegister.contains(scriptRegEntry)) {
+                    scriptRegEntry.$el.attr('data-spa-loaded', 1);
+                    console.log('ng.html - excluding %o', el)
+                } else {
+                    this.scriptRegister.add(scriptRegEntry);
+                    console.warn('ng.html - adding %o', el)
+                }
+            });
+
+            $styles.each((index, el) => {
+                var styleRegEntry = new StyleRegisterEntry(el);
+                if (this.styleRegister.contains(styleRegEntry)) {
+                    styleRegEntry.$el.attr('data-spa-loaded', 1);
+                    console.log('ng.html - excluding %o', el)
+                } else {
+                    this.styleRegister.add(styleRegEntry);
+                    console.warn('ng.html - adding %o', el)
+                }
+            });
+
+            var eventData = utils.defaults({
+                $scripts: $scripts,
+                $styles: $styles,
+                old: {
+                    $scripts: $scripts.not("[data-spa-loaded='true']"),
+                    $styles: $styles.not("[data-spa-loaded='true']")
+                },
+                new: {
+                    $scripts: $scripts.filter("[data-spa-loaded='true']"),
+                    $styles: $styles.filter("[data-spa-loaded='true']")
+                }
+            }, data);
+            this.$broadcast('html:update', eventData)
         });
+    }
 
-        $styles.each(function (index, el) {
-            var styleRegEntry = new StyleRegisterEntry(el);
-            if ($scope.styleRegister.contains(styleRegEntry)) {
-                styleRegEntry.$el.attr('data-spa-loaded', true);
-                console.log('ng.html - excluding %o', el)
-            } else {
-                $scope.styleRegister.add(styleRegEntry);
-                console.warn('ng.html - adding %o', el)
-            }
-        });
-
-        var eventData = utils.defaults({
-            $scripts: $scripts,
-            $styles: $styles,
-            old: {
-                $scripts: $scripts.not("[data-spa-loaded='true']"),
-                $styles: $styles.not("[data-spa-loaded='true']")
-            },
-            new: {
-                $scripts: $scripts.filter("[data-spa-loaded='true']"),
-                $styles: $styles.filter("[data-spa-loaded='true']")
-            }
-        }, data);
-        $scope.$broadcast('html:update', eventData)
-    });
-}
-
-HTMLDirective.prototype = {
-
-    registerScripts: function ($scripts) {
-        var $scope = this;
-        $scripts.each(function (index, el) {
-            $scope.scriptRegister.add(new ScriptRegisterEntry(el));
+    registerScripts($scripts) {
+        $scripts.each((index, el) => {
+            this.scriptRegister.add(new ScriptRegisterEntry(el));
             console.warn('ng.html - adding %o', el)
         })
-    },
+    }
 
-    registerStyles: function ($styles) {
-        var $scope = this;
-        $styles.each(function (index, el) {
-            $scope.styleRegister.add(new StyleRegisterEntry(el));
+    registerStyles($styles) {
+        $styles.each((index, el) => {
+            this.styleRegister.add(new StyleRegisterEntry(el));
             console.warn('ng.html - adding %o', el)
         })
-    },
+    }
 
     /**
      *
@@ -102,10 +103,9 @@ HTMLDirective.prototype = {
      * @param {String} [options.ignore]
      * @param {String} [options.remove]
      */
-    formatDOM: function ($DOM, options) {
-        var $scope = this,
-            _options = utils.defaults({}, options),
-            $scripts = $DOM.find('script');
+    formatDOM($DOM, options?: { remove?: string | JQuery, ignore?: string | JQuery }) {
+        const _options = utils.defaults({}, options);
+        let $scripts = $DOM.find('script');
 
         if (_options.ignore) {
             $scripts = $scripts.not(_options.ignore);
@@ -115,10 +115,6 @@ HTMLDirective.prototype = {
             $scripts = $scripts.not($removedScripts);
         }
         $scripts.detach();
-        $DOM.find($scope.configLoader.getMainSelector()).append($scripts);
+        $DOM.find(this.configLoader.getMainSelector()).append($scripts);
     }
-
-};
-
-utils.defaults(HTMLDirective.prototype, Module.prototype);
-module.exports = HTMLDirective;
+}

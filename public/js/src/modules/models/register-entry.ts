@@ -1,6 +1,6 @@
-import * as $ from 'jquery';
+import $ from 'jquery';
 
-export class RegisterEntry implements IRegisterEntry{
+export class RegisterEntry implements IRegisterEntry {
     meta: any;
     el: HTMLScriptElement;
     $el: JQuery<HTMLScriptElement>;
@@ -8,8 +8,6 @@ export class RegisterEntry implements IRegisterEntry{
     constructor(scriptDOMNode: HTMLScriptElement) {
         this.meta = {};
         this.el = scriptDOMNode;
-        this.$el = $(scriptDOMNode as HTMLElement);
+        this.$el = $(scriptDOMNode);
     }
 }
-
-module.exports = RegisterEntry;

@@ -1,10 +1,8 @@
 import { RegisterEntry } from './register-entry';
 
-class StyleRegisterEntry extends RegisterEntry {
+export class StyleRegisterEntry extends RegisterEntry implements IRegisterEntry {
 
-    getId() {
+    getId(): string {
         return this.$el.attr('href') || this.$el.html();
     }
 }
-
-module.exports = StyleRegisterEntry;

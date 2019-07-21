@@ -1,4 +1,4 @@
-export class NodeRegister {
+export class DOMNodeRegister {
     registry: IRegisterEntry[];
 
     constructor() {
@@ -34,5 +34,3 @@ export class NodeRegister {
         }
     }
 }
-
-export default NodeRegister;

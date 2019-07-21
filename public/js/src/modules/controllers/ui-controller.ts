@@ -6,30 +6,35 @@ import $ from 'jquery';
 import * as utils       from 'modules/lib/utils';
 import { Module }       from 'modules/lib/module';
 import { Application }  from 'modules/app';
-import * as LoadingView from 'modules/views/loading';
+import { LoadingView } from 'modules/views/loading';
 
 // jquery plugins
 import 'modules/views/jquery.one-strict';
 import 'modules/views/jquery.prepended-css';
 
-class UIController extends Module {
-  config: any;
+interface IUIControllerFlags {
+  showLoadingScreen?: boolean;
+  asyncAnimation?: boolean;
+  enforceSmooth?: boolean;
+  useScreenClip?: boolean;
+}
+
+export class UIController extends Module {
+  config: IConfigLoaderData;
   $body: JQuery<HTMLBodyElement>;
-  flags: {[key: string]: any} = {};
+  clickables?:JQuery<HTMLBodyElement[]>;
+  flags: IUIControllerFlags;
   mainSelector: string;
-  exec?: (callback: Function) => void;
+  exec?: (callback: Function, time?: number) => void;
+  loadingView: LoadingView;
 
   constructor(public app: Application) {
     super(app);
-    this.config = utils.defaults(this.configLoader.getDefaults(), {
-      timeout: 2000
-    });
+    this.config = utils.defaults<IConfigLoaderData>(this.configLoader.getDefaults(), { timeout: 2000 });
     this.$body = $('body');
 
     this.mainSelector = this.configLoader.getMainSelector();
     this.updateConfiguration();
-
-    this._interceptAction = this.interceptAction.bind(this);
 
 
     this.loadingView = new LoadingView({
@@ -130,9 +135,9 @@ class UIController extends Module {
   }
 
   updateAnimationOptions () {
-    this.flags.enforceSmooth = parseInt(this.config.enforceSmooth) === 1;
-    this.flags.asyncAnimation = parseInt(this.config.asyncAnimation) === 1;
-    this.flags.useScreenClip = parseInt(this.config.useScreenClip) === 1;
+    this.flags.enforceSmooth = Number(this.config.enforceSmooth) === 1;
+    this.flags.asyncAnimation = Number(this.config.asyncAnimation) === 1;
+    this.flags.useScreenClip = Number(this.config.useScreenClip) === 1;
     this.flags.showLoadingScreen = !!this.$root.attr('data-wp-spa-loader-type');
   }
 
@@ -147,15 +152,15 @@ class UIController extends Module {
 
   destroyClickOverrides () {
     if (this.clickables) {
-      this.clickables.off('click', null, (...args) => this.interceptAction(...args));
+      this.clickables.off('click', null, evt => this.interceptAction(evt));
     }
     delete this.clickables;
   }
 
   createClickOverrides ($page) {
     this.clickables = $page.find('[href]').not('[data-spa-initialized]');
-    this.clickables.on('click', this._interceptAction);
-    this.clickables.attr('data-spa-initialized', true);
+    this.clickables.on('click', evt => this.interceptAction(evt));
+    this.clickables.attr('data-spa-initialized', 1);
   }
 
   shake () {
@@ -198,16 +203,15 @@ class UIController extends Module {
   }
 
   addPage ($page, attrs, callback) {
-    let this = this,
-      $view = $page.find('.spa-content__view'),
-      attrIdx = 0,
-      bodyClasses,
-      attr;
+    let $view = $page.find('.spa-content__view');
+    let attrIdx = 0;
+    let bodyClasses;
+    let attr;
 
     this.hookIntoPage($page);
 
-    let startAnimationEndWatch = $page.oneDelayedTimeout('animationend', function () {
-      this.$timeout(function () {
+    let startAnimationEndWatch = $page.oneDelayedTimeout('animationend', () => {
+      this.$timeout(() => {
         // restore classes to normal
         this.$body.attr('class', bodyClasses);
         $view.removeClass(bodyClasses);
@@ -224,7 +228,7 @@ class UIController extends Module {
         this.$window.resize();
         this.$window.scroll();
       });
-    }, parseInt(this.config.animationInDuration) + this.config.timeout);
+    }, Number(this.config.animationInDuration) + this.config.timeout);
 
     while (attr = attrs[attrIdx++]) {
       switch (attr.name) {
@@ -257,7 +261,7 @@ class UIController extends Module {
       this.$root.prepend($page);
     }
 
-    this.exec(function () {
+    this.exec(() => {
 
       // jump to top of screen
       // helps keep transitions between pages seamless
@@ -277,10 +281,9 @@ class UIController extends Module {
     });
   }
 
-  removePage ($page, callback) {
-    let this = this,
-      $view = $page.find('.spa-content__view'),
-      bodyClassNames = this.$body.attr('class');
+  removePage ($page, callback?) {
+    let $view = $page.find('.spa-content__view');
+    let bodyClassNames = this.$body.attr('class');
 
     // adjust for clipped view
     // possibly provides relief from flicker
@@ -319,22 +322,24 @@ class UIController extends Module {
     }
     $page.addClass('animate-page-out');
 
-    let startAnimationEndWatch = $page.oneDelayedTimeout('animationend', function () {
+    let startAnimationEndWatch = $page.oneDelayedTimeout('animationend', () => {
       //$page.remove();
       //this.$root.prependedCSS('remove');
       //if (callback) callback();
 
       $page.remove();
       if (callback) callback();
-      if (this.flags.useScreenClip) this.$root.prependedCSS('remove');
+      if (this.flags.useScreenClip) {
+        this.$root.prependedCSS('remove');
+      }
 
-    }, parseInt(this.config.animationOutDuration) + this.config.timeout);
+    }, Number(this.config.animationOutDuration) + this.config.timeout);
 
     // duplicate body classNames to $page scope
     $view.addClass(bodyClassNames);
 
     // allow overflow rendering first
-    this.exec(function () {
+    this.exec(() => {
       startAnimationEndWatch();
       $page.css({
         'animation-name': this.config.animationOutName,
@@ -343,6 +348,4 @@ class UIController extends Module {
     });
   }
 }
-
-export default UiController;
 

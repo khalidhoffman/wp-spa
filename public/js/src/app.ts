@@ -1,7 +1,7 @@
 import $ = require('jquery');
 
-import WPSPA from './modules/app';
+import { Application } from 'modules/app';
 
 $(function () {
-  const app = new WPSPA();
+  const app = new Application();
 });
