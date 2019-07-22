@@ -37,7 +37,7 @@ module.exports = {
         }
     },
     plugins: (function () {
-        var config = JSON.parse(require('fs').readFileSync(require('path').join(process.cwd(), 'dp-project-config.json'), 'utf8')),
+        var config = JSON.parse(require('fs').readFileSync(require('path').join(process.cwd(), 'weblee.config.json'), 'utf8')),
             defaults = [
                 new webpack.optimize.UglifyJsPlugin({
                     compress: {

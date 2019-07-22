@@ -6,12 +6,14 @@
   "scripts": {
     "test": "jasmine",
     "webpack": "webpack --display-reasons",
-    "public-js": "onchange 'public/js/src/**/*.js' -- gulp build-webpack",
-    "public-js-screen": "cd ~/wp-spa; screen -S spa_js -d -m npm run public-js",
-    "public-css": "onchange 'public/js/src/**/*.styl' -- gulp stylus-bem && gulp css",
-    "public-css-screen": "cd ~/wp-spa; screen -S spa_css -d -m npm run public-css",
+    "js:public": "gulp build-webpack",
+    "css:public": "gulp stylus-bem && gulp css",
+    "watch:js:public": "onchange 'public/js/src/**/*.js' -- npm run js:public",
+    "watch:css:public": "onchange 'public/js/src/**/*.styl' -- npm run css:public",
+    "screen:js:public": "cd ~/wp-spa; screen -S spa_js -d -m npm run public-js",
+    "screen:css:public": "cd ~/wp-spa; screen -S spa_css -d -m npm run public-css",
     "install:composer": "composer install",
-    "setup": "dp-setup"
+    "setup": "weblee setup"
   },
   "repository": {
     "type": "git",
@@ -34,6 +36,8 @@
     "json-loader": "^0.5.4",
     "raw-loader": "^0.5.1",
     "tooltipster": "^4.1.6",
+    "ts-loader": "^6.0.4",
+    "typescript": "^3.5.3",
     "weblee-utils": "git+https://github.com/webleedev/weblee-utils.git",
     "webpack": "^1.13.2",
     "webpack-bundle-analyzer": "^2.2.1"

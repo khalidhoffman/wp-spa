@@ -7,6 +7,7 @@ var path = require('path'),
 module.exports = {
     entry: "app.js",
     context: __dirname,
+    devtool: 'inline-source-map',
     output: {
         path: path.join(process.cwd(), 'public/js/'),
         filename: "wp-spa-public.js"
@@ -18,7 +19,11 @@ module.exports = {
                 loader: 'raw!'
             },
             {
-                test: /history/,
+                test: /\.tsx?$/,
+                loader: 'ts-loader'
+            },
+            {
+                test: /^history/,
                 loader: "exports?History"
             }
         ]
@@ -44,29 +49,33 @@ module.exports = {
         }
     },
     plugins: (function () {
-        var config = JSON.parse(require('fs').readFileSync(require('path').join(process.cwd(), 'dp-project-config.json'), 'utf8')),
-            plugins = [
-                new webpack.optimize.UglifyJsPlugin({
+        const configPath = path.join(process.cwd(), 'weblee.config.json');
+        const configText = fs.readFileSync(configPath, 'utf8');
+        const config = JSON.parse(configText);
+        const plugins = [
+            new webpack.ProvidePlugin({
+                $: "jquery",
+                jQuery: "jquery"
+            })
+        ];
+
+        switch (config.flag) {
+            case 'profile':
+                const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+                return plugins.concat([new BundleAnalyzerPlugin(), MinifyPlugin]);
+
+            case 'dev':
+                return plugins;
+
+            default:
+                const MinifyPlugin = new webpack.optimize.UglifyJsPlugin({
                     compress: {
                         drop_console: true,
                         drop_debugger: true
                     }
-                }),
-                new webpack.ProvidePlugin({
-                    $: "jquery",
-                    jQuery: "jquery"
-                })
-            ];
-        switch (config.flag) {
-            case 'profile':
-                BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-                plugins = plugins.concat([
-                    new BundleAnalyzerPlugin()
-                ]);
-            case 'dev':
-                return plugins.slice(1);
-            default:
-                return plugins;
+                });
+
+                return plugins.concat(MinifyPlugin);
         }
     })(),
     node: {
