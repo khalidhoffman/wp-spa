@@ -1,4 +1,4 @@
-import $ = require('jquery');
+import * as $ from 'jquery';
 
 import { Application } from 'modules/app';
 

@@ -1,58 +1,55 @@
-var path = require('path'),
-    url = require('url'),
-    fs = require('fs'),
+const path = require('path');
 
-    webpack = require('webpack'),
-    ModuleReplace = webpack.NormalModuleReplacementPlugin;
+const webpack = require('webpack');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+
+const ModuleReplace = webpack.NormalModuleReplacementPlugin;
 
 module.exports = {
-    entry: "app.js",
+    entry: "./app.js",
+    mode: 'development',
     context: __dirname,
     output: {
         path: path.join(process.cwd(), '/admin/js/'),
         filename: "wp-spa-admin.js"
     },
     module: {
-        noParse: ['jquery', 'backbone'],
-        loaders: [
-            {
-                test: /\.md$/,
-                loader: 'raw!'
-            }
+        noParse: [/jquery/, /backbone/],
+        rules: [
         ]
     },
     resolve: {
-        root: __dirname,
-        modulesDirectories: [__dirname, path.join(process.cwd(), 'node_modules')],
-        extensions: ['', '.js'],
+        extensions: ['.ts', '.js'],
         alias: {
-            "css-parser": "vendors/cssParser",
-            "jquery": "vendors/jquery-wp"
+            "css-parser": path.join(__dirname, "./vendors/cssParser.js"),
+            "jquery": path.join(__dirname, "./vendors/jquery-wp.js")
         }
     },
-    shim: {
-        "live": [],
-        'modernizr': {
-            "exports": 'Modernizr'
-        }
-    },
-    plugins: (function () {
-        var config = JSON.parse(require('fs').readFileSync(require('path').join(process.cwd(), 'weblee.config.json'), 'utf8')),
-            defaults = [
-                new webpack.optimize.UglifyJsPlugin({
+    optimization: {
+        minimizer: [
+            new UglifyJsPlugin({
+                sourceMap: true,
+                uglifyOptions: {
                     compress: {
                         drop_console: true,
                         drop_debugger: true
                     }
-                }),
+                }
+            })
+        ]
+    },
+    plugins: (function () {
+        var config = JSON.parse(require('fs').readFileSync(require('path').join(process.cwd(), 'weblee.config.json'), 'utf8')),
+            defaults = [
                 new ModuleReplace(/^css-parser$/, function (ctx) {
-                    ctx.request = 'exports?CSSParser!' + ctx.request;
+                    ctx.request = 'exports-loader?CSSParser!' + ctx.request;
                 })
             ];
+
         switch (config.flag) {
             case 'dev':
                 return defaults.slice(1);
-                break;
+
             default:
                 return defaults;
         }

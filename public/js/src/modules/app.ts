@@ -21,19 +21,17 @@ export class Application implements IApplication {
   htmlView: Views.HTMLDirective;
   headView: Views.HeadDirective;
 
-  constructor() {
+  constructor(private bootstrapSelector: string = '.spa-content') {
 
-    this.bootstrap($('.spa-content'));
+    this.bootstrap($(this.bootstrapSelector));
     this.$window = $(window);
     this.meta = {
       baseHREF: $('head base').attr('href')
     };
 
-
     this.resourceMonitor = new ResourceMonitor();
     this.configLoader = new ConfigLoader(this);
     this.contentLoader = new ContentLoader(this);
-
     this.router = new AppRouter(this.meta.baseHREF);
 
     this.router.on(/.*/, (path) => {
@@ -75,24 +73,6 @@ export class Application implements IApplication {
     }
   }
 
-  extendModule(module) {
-    const extendedProps = [
-      '$timeout',
-      '$window',
-      '$root',
-      'meta',
-      'resourceMonitor',
-      'configLoader',
-      'contentLoader',
-      'router'
-    ];
-    const propsLength = extendedProps.length;
-
-    for (let propIdx = 0; propIdx < propsLength; propIdx++) {
-      module[extendedProps[propIdx]] = this[extendedProps[propIdx]];
-    }
-  }
-
   bootstrap($root: JQuery) {
     const $contentPage = $root.find('.spa-content__page');
 
@@ -102,4 +82,4 @@ export class Application implements IApplication {
   }
 }
 
-module.exports = Application;
+export default Application;

@@ -1,11 +1,11 @@
 import * as url from 'url';
 
-import $ from 'jquery';
+import * as $ from 'jquery';
 
 // local modules
-import * as utils       from 'modules/lib/utils';
-import { Module }       from 'modules/lib/module';
-import { Application }  from 'modules/app';
+import * as utils      from 'modules/lib/utils';
+import { Module }      from 'modules/lib/module';
+import { Application } from 'modules/app';
 import { LoadingView } from 'modules/views/loading';
 
 // jquery plugins
@@ -20,10 +20,11 @@ interface IUIControllerFlags {
 }
 
 export class UIController extends Module {
-  config: IConfigLoaderData;
   $body: JQuery<HTMLBodyElement>;
-  clickables?:JQuery<HTMLBodyElement[]>;
-  flags: IUIControllerFlags;
+  $clickables?: JQuery<HTMLBodyElement[]>;
+
+  config: IConfigLoaderData;
+  flags: IUIControllerFlags = {};
   mainSelector: string;
   exec?: (callback: Function, time?: number) => void;
   loadingView: LoadingView;
@@ -41,8 +42,8 @@ export class UIController extends Module {
       indicatorType: this.$root.data('wp-spa-loader-type'),
       indicatorColor: this.$root.data('wp-spa-loader-color')
     });
-    if (this.flags.showLoadingScreen) {
 
+    if (this.flags.showLoadingScreen) {
       this.loadingView.appendTo(this.$body);
 
       // make use off css transition to smooth loading intro
@@ -95,7 +96,7 @@ export class UIController extends Module {
     });
   }
 
-  interceptAction (evt) {
+  interceptAction(evt) {
     console.log('ngBody.interceptAction()');
     let targetHref = evt.currentTarget.href || location.href,
       route = this.getRouteFromHREF(targetHref);
@@ -114,7 +115,7 @@ export class UIController extends Module {
     }
   }
 
-  getRouteFromHREF (href) {
+  getRouteFromHREF(href) {
     let targetHrefMeta = url.parse(href);
     if (/\/wp\-(admin|login)\/?/.test(targetHrefMeta.path)) {
       return false;
@@ -134,75 +135,77 @@ export class UIController extends Module {
     }
   }
 
-  updateAnimationOptions () {
+  updateAnimationOptions() {
     this.flags.enforceSmooth = Number(this.config.enforceSmooth) === 1;
     this.flags.asyncAnimation = Number(this.config.asyncAnimation) === 1;
     this.flags.useScreenClip = Number(this.config.useScreenClip) === 1;
     this.flags.showLoadingScreen = !!this.$root.attr('data-wp-spa-loader-type');
   }
 
-  updateExecutionMethod () {
+  updateExecutionMethod() {
     this.exec = this.flags.enforceSmooth ? this.execOnIdle : this.execImmediate;
   }
 
-  updateConfiguration () {
+  updateConfiguration() {
     this.updateAnimationOptions();
     this.updateExecutionMethod();
   }
 
-  destroyClickOverrides () {
-    if (this.clickables) {
-      this.clickables.off('click', null, evt => this.interceptAction(evt));
+  destroyClickOverrides() {
+    if (this.$clickables) {
+      this.$clickables.off('click', null, evt => this.interceptAction(evt));
     }
-    delete this.clickables;
+    delete this.$clickables;
   }
 
-  createClickOverrides ($page) {
-    this.clickables = $page.find('[href]').not('[data-spa-initialized]');
-    this.clickables.on('click', evt => this.interceptAction(evt));
-    this.clickables.attr('data-spa-initialized', 1);
+  createClickOverrides($page) {
+    this.$clickables = $page.find('[href]').not('[data-spa-initialized]');
+    this.$clickables.on('click', evt => this.interceptAction(evt));
+    this.$clickables.attr('data-spa-initialized', 1);
   }
 
-  shake () {
-    this.$root.oneTimeout('animationend', function () {
+  shake() {
+    this.$root.oneTimeout('animationend', () => {
       this.$root.removeClass('spa-content--shake');
     }, 3000);
     this.$root.addClass('spa-content--shake');
   }
 
-  hookIntoPage ($page) {
+  hookIntoPage($page) {
     this.createClickOverrides($page);
   }
 
-  execOnIdleTimed (callback, duration) {
-    let isCallbackClean = true,
-      timeoutId,
-      strictCallback = function () {
-        clearTimeout(timeoutId);
-        if (isCallbackClean) callback();
-      };
+  execOnIdleTimed(callback, duration) {
+    let isCallbackClean = true;
+    let timeoutId;
+    let strictCallback = () => {
+      clearTimeout(timeoutId);
+      if (isCallbackClean) {
+        callback();
+      }
+    };
 
     this.resourceMonitor.once(strictCallback);
 
-    timeoutId = setTimeout(function () {
+    timeoutId = setTimeout(() => {
       isCallbackClean = false;
       callback();
     }, duration);
   }
 
-  execOnIdle (callback) {
+  execOnIdle(callback) {
     return this.resourceMonitor.once(callback);
   }
 
-  execImmediate (callback) {
+  execImmediate(callback) {
     return this.$timeout(callback);
   }
 
-  unHook () {
+  unHook() {
     this.destroyClickOverrides()
   }
 
-  addPage ($page, attrs, callback) {
+  addPage($page, attrs, callback) {
     let $view = $page.find('.spa-content__view');
     let attrIdx = 0;
     let bodyClasses;
@@ -281,7 +284,7 @@ export class UIController extends Module {
     });
   }
 
-  removePage ($page, callback?) {
+  removePage($page, callback?) {
     let $view = $page.find('.spa-content__view');
     let bodyClassNames = this.$body.attr('class');
 

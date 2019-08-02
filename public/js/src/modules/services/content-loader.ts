@@ -1,4 +1,4 @@
-import $   from 'jquery';
+import * as $   from 'jquery';
 import * as url from 'url';
 
 import * as utils      from '../lib/utils';
@@ -67,7 +67,6 @@ export class ContentLoader extends Module {
       await $.ajax({
         url: /^http/.test(route) ? route : url.resolve(this.meta.baseHREF, route),
         success: (response) => {
-          console.log('spaContent.$http.get.success(%O)', response);
           const _DOM = document.createElement('html');
           _DOM.innerHTML = response;
           const $DOM = $(_DOM);

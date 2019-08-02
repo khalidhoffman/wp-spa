@@ -1,8 +1,19 @@
 import { Application }     from 'modules/app';
+import { AppRouter }       from 'modules/lib/router';
 import { ConfigLoader }    from 'modules/services/config-loader';
 import { ContentLoader }   from 'modules/services/content-loader';
-import { AppRouter }       from 'modules/lib/router';
 import { ResourceMonitor } from 'modules/services/resource-monitor';
+
+const defaultExtendedProps = [
+  '$timeout',
+  '$window',
+  '$root',
+  'meta',
+  'resourceMonitor',
+  'configLoader',
+  'contentLoader',
+  'router'
+];
 
 export class Module {
   meta: IModuleMeta;
@@ -18,14 +29,17 @@ export class Module {
 
   constructor(public app: Application) {
     this.app = app;
-    this.app.extendModule(this);
+
+    for (let propertyName of defaultExtendedProps) {
+      this[propertyName] = this.app[propertyName];
+    }
   }
 
   $on(event, callback) {
-    this.app.on.call(this.app, event, callback)
+    this.app.on(event, callback)
   }
 
   $broadcast(event: string, ...data: any[]) {
-    this.app.emit.apply(this.app, arguments)
+    this.app.emit(event, ...data)
   }
 }

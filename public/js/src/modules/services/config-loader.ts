@@ -1,4 +1,4 @@
-import $ from 'jquery';
+import * as $ from 'jquery';
 
 import { Application } from 'modules/app';
 import { Module }      from '../lib/module';
@@ -99,8 +99,6 @@ export class ConfigLoader extends Module {
             }
           },
           error: (response) => {
-            console.error('response: %o', response);
-
             if (callback) {
               callback(new Error('Could not fetch config'), null);
             }

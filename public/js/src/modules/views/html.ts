@@ -1,4 +1,4 @@
-import $ from 'jquery';
+import * as $ from 'jquery';
 
 import { Application }         from 'modules/app';
 import * as utils              from 'modules/lib/utils';

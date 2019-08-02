@@ -1,53 +1,49 @@
-var path = require('path'),
-    url = require('url'),
-    fs = require('fs'),
+const path = require('path');
+const fs = require('fs');
 
-    webpack = require('webpack');
+const webpack = require('webpack');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
-    entry: "app.js",
+    entry: "./app.ts",
     context: __dirname,
     devtool: 'inline-source-map',
+    mode: 'development',
     output: {
         path: path.join(process.cwd(), 'public/js/'),
         filename: "wp-spa-public.js"
     },
     module: {
-        loaders: [
-            {
-                test: /\.md$/,
-                loader: 'raw!'
-            },
+        rules: [
             {
                 test: /\.tsx?$/,
                 loader: 'ts-loader'
-            },
-            {
-                test: /^history/,
-                loader: "exports?History"
             }
         ]
     },
     resolve: {
-        root: __dirname,
-        modulesDirectories: [__dirname, path.join(process.cwd(), 'node_modules')],
-        extensions: ['.js', ''],
+        extensions: ['.js', '.ts'],
         alias: {
-            "utils": "modules/lib/utils",
+            "utils": path.join(__dirname, "./modules/lib/utils"),
+            "modules": path.join(__dirname, './modules'),
 
             // overrides
-            "jquery": "vendors/jquery-wp",
-
-            "live": "vendors/live",
-            "history": "vendors/native.history"
+            "jquery": path.join(__dirname, "./vendors/jquery-wp.js")
         }
     },
-    shim: {
-        "live": [],
-        'modernizr': {
-            "exports": 'Modernizr'
-        }
-    },
+    // optimization: {
+    //     minimizer: [
+    //         new UglifyJsPlugin({
+    //             sourceMap: true,
+    //             uglifyOptions: {
+    //                 compress: {
+    //                     drop_console: true,
+    //                     drop_debugger: true
+    //                 }
+    //             }
+    //         })
+    //     ]
+    // },
     plugins: (function () {
         const configPath = path.join(process.cwd(), 'weblee.config.json');
         const configText = fs.readFileSync(configPath, 'utf8');
@@ -64,18 +60,8 @@ module.exports = {
                 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
                 return plugins.concat([new BundleAnalyzerPlugin(), MinifyPlugin]);
 
-            case 'dev':
-                return plugins;
-
             default:
-                const MinifyPlugin = new webpack.optimize.UglifyJsPlugin({
-                    compress: {
-                        drop_console: true,
-                        drop_debugger: true
-                    }
-                });
-
-                return plugins.concat(MinifyPlugin);
+                return plugins
         }
     })(),
     node: {

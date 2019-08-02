@@ -1,4 +1,4 @@
-import $ from 'jquery';
+import * as $ from 'jquery';
 
 $.fn.oneTimeout = function (event, callback, duration) {
     var $el = this,

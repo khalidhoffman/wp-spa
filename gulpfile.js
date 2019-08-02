@@ -23,10 +23,10 @@ gulp.task('chrome-sync', task('extra/chrome-sync').run);
 // CSS tasks
 gulp.task('css', exec('css'));
 
-gulp.task('stylus', exec('stylus'));
+gulp.task('stylus', exec('stylus-bem'));
 
 gulp.task('stylus-auto', function () {
-    gulp.watch(Utils.buildGlobSelector(project.tasks['stylus'], '**/*.styl'), ['stylus']);
+    gulp.watch(Utils.buildGlobSelector(project.tasks['stylus-bem'], '**/*.styl'), ['stylus-bem']);
 });
 
 gulp.task('less', exec('less'));
@@ -66,7 +66,12 @@ gulp.task('js-beautify-auto', function () {
     });
 });
 
-gulp.task('build-webpack', exec('webpack'));
+gulp.task('build-webpack', function(done) {
+    console.log('gulp starting build-webpack');
+    return exec('webpack')()
+        .then(() => console.log("done"))
+        .then(() => done())
+});
 
 gulp.task('build-rjs', exec('rjs'));
 

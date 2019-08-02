@@ -19,7 +19,6 @@
   transition-duration: 250ms;
   -webkit-transition-timing-function: ease;
   transition-timing-function: ease;
-  -webkit-box-shadow: 0 0 9px -2px #000;
   box-shadow: 0 0 9px -2px #000;
   background-color: #fff;
   width: 60%;
@@ -46,13 +45,9 @@
   width: 100%;
 }
 .feedback {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 .feedback * {
-  -webkit-box-sizing: inherit;
-  -moz-box-sizing: inherit;
   box-sizing: inherit;
 }
 .feedback.feedback--visible .feedback__modal {
@@ -140,7 +135,6 @@
   height: 2em;
   border-radius: 50%;
   background: #fff;
-  -webkit-box-shadow: 0 0 -2px 6px #000;
   box-shadow: 0 0 -2px 6px #000;
   left: 0;
   -webkit-transition-property: left;
@@ -152,7 +146,6 @@
 }
 #wp-spa .settings input:checked {
   background-color: #0f630f;
-  -webkit-box-shadow: 0 0 6px #000 inset;
   box-shadow: 0 0 6px #000 inset;
 }
 #wp-spa .settings input:checked#wp_spa_enforceSmooth,

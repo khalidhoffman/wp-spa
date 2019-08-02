@@ -1,5 +1,5 @@
 import * as url     from 'url';
-import $            from 'jquery';
+import * as $            from 'jquery';
 
 import { DOMParser } from './dom-parser';
 

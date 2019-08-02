@@ -1,40 +1,35 @@
 import * as url from 'url';
 
+import { AppHistory } from 'modules/lib/history';
 
-export class AppRouter implements IRouter  {
-    base: string;
-    history: IRouterHistory;
-    routes: IRouterHandler[];
 
-    constructor(base: string) {
-        this.history = require('history');
-        this.base = base;
-        this.routes = [];
-        this.history.Adapter.bind(window, 'statechange', () => {
-            const state = this.history.getState();
-            const path = state.data.path;
-            let routeHandlerIdx = 0;
-            let routeHandler = this.routes[routeHandlerIdx];
+export class AppRouter implements IRouter {
+  history: AppHistory = new AppHistory();
+  routes: IRouterHandler[] = [];
 
-            console.log('statechange:', state);
-            while (routeHandler) {
-                if (routeHandler.path.test(path)) {
-                    routeHandler.callback(path);
-                }
-                routeHandlerIdx++;
-                routeHandler = this.routes[routeHandlerIdx];
-            }
-        });
-    }
+  constructor(public base: string = '/') {
+    this.history.onChange(() => {
+      const state = this.history.getState();
+      const path = state.data.path;
 
-    on(path, callback) {
-        this.routes.push({
-            path: path,
-            callback: callback
-        })
-    }
+      console.log('statechange:', state);
 
-    path(path) {
-        this.history.pushState({path: path}, null, url.resolve(this.base, path));
-    }
+      for (let routeHandler of this.routes) {
+        if (routeHandler.path.test(path)) {
+          routeHandler.callback(path);
+        }
+      }
+    });
+  }
+
+  on(path, callback) {
+    this.routes.push({
+      path: path,
+      callback: callback
+    })
+  }
+
+  path(path) {
+    this.history.pushState({ path, url: url.resolve(this.base, path) }, path);
+  }
 }

@@ -40,17 +40,9 @@ interface IRouterHandler {
     callback: Function;
 }
 
-interface IRouterHistory extends History {
-    Adapter: {
-        bind(HTMLElement, string, Function): any
-    }
-
-    getState(): { data: { path: string } };
-}
 
 interface IRouter {
     base: string;
-    history: IRouterHistory;
     routes: IRouterHandler[];
 }
 

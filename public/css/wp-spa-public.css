@@ -460,7 +460,6 @@ head + * {
   right: 0;
   width: 100px;
   height: 100%;
-  -webkit-box-shadow: 0 0 10px #fff, 0 0 6px #fff;
   box-shadow: 0 0 10px #fff, 0 0 6px #fff;
   -webkit-transform: rotate(4deg) translate(0px, -4px);
   -ms-transform: rotate(4deg) translate(0px, -4px);
@@ -490,7 +489,6 @@ head + * {
   opacity: 0.9;
   background-color: rgba(0,0,0,0.5);
   border-radius: 50%;
-  -webkit-box-shadow: 0 0 8px -3px #000;
   box-shadow: 0 0 8px -3px #000;
   width: 3em;
   height: 3em;

@@ -1,4 +1,4 @@
-import $ from 'jquery';
+import * as $ from 'jquery';
 
 $.fn.prependedCSS = function (op: IPrependCSSArgs): void {
     if (Array.isArray(op)){

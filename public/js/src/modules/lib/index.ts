@@ -1,6 +1,5 @@
-console.log("require('modules/lib/index')");
-
-module.exports = {
-    App: require('modules/lib/app'),
-    Module: require('modules/lib/module')
-};
+export * from './history';
+export * from './utils'
+export * from './dom-parser'
+export * from './module'
+export * from './router'
