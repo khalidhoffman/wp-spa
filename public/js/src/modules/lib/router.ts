@@ -8,11 +8,11 @@ export class AppRouter implements IRouter {
   routes: IRouterHandler[] = [];
 
   constructor(public base: string = '/') {
-    this.history.onChange(() => {
+    this.history.onChange((evt) => {
       const state = this.history.getState();
-      const path = state.data.path;
+      const path = state.path;
 
-      console.log('statechange:', state);
+      console.log('statechange:', state, evt);
 
       for (let routeHandler of this.routes) {
         if (routeHandler.path.test(path)) {
@@ -29,7 +29,10 @@ export class AppRouter implements IRouter {
     })
   }
 
-  path(path) {
-    this.history.pushState({ path, url: url.resolve(this.base, path) }, path);
+  path(path: string) {
+    const pathUrl = url.resolve(this.base, path);
+    const data = { path, url: pathUrl };
+
+    this.history.pushState(data, undefined, pathUrl);
   }
 }

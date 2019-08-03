@@ -98,8 +98,8 @@ export class UIController extends Module {
 
   interceptAction(evt) {
     console.log('ngBody.interceptAction()');
-    let targetHref = evt.currentTarget.href || location.href,
-      route = this.getRouteFromHREF(targetHref);
+    const targetHref = evt.currentTarget.href || location.href;
+    const route = this.getRouteFromHREF(targetHref);
 
     if (route) {
       console.log('ngBody.interceptAction()  - routing to %s', utils.getPathFromUrl(targetHref));
@@ -326,9 +326,6 @@ export class UIController extends Module {
     $page.addClass('animate-page-out');
 
     let startAnimationEndWatch = $page.oneDelayedTimeout('animationend', () => {
-      //$page.remove();
-      //this.$root.prependedCSS('remove');
-      //if (callback) callback();
 
       $page.remove();
       if (callback) callback();

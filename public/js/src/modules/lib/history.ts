@@ -4,16 +4,18 @@ import TriggeredEvent = JQuery.TriggeredEvent;
 type IHistoryEvent = TriggeredEvent<Window, PopStateEvent>;
 type IHistoryChangeCallback = (evt: IHistoryEvent) => void;
 
+const HISTORY_CHANGE_EVENT = 'statechange';
+
 export class AppHistory {
 
   private $window = $(window);
   private callbacks: IHistoryChangeCallback[] = [];
 
   constructor(public history: History = window.history) {
-    this.$window.on('popstate', (event) => this.onPopState(event));
+    this.$window.on(HISTORY_CHANGE_EVENT, (event) => this.execCallbacks(event));
   }
 
-  private onPopState(event: TriggeredEvent<Window, PopStateEvent>) {
+  private execCallbacks(event: TriggeredEvent<Window, PopStateEvent>) {
     this.callbacks.forEach(callback => callback && callback(event));
   }
 
@@ -23,6 +25,13 @@ export class AppHistory {
 
   pushState(data?: any, title?: string, url?: string) {
     this.history.pushState(data, title, url);
+    this.$window.trigger(new $.Event(HISTORY_CHANGE_EVENT, {
+      data: {
+        title,
+        url,
+        ...data
+      }
+    }));
   }
 
   onChange(callback?: IHistoryChangeCallback) {
@@ -35,6 +44,6 @@ export class AppHistory {
   }
 
   destroy(): void {
-    this.$window.off('popstate');
+    this.$window.off(HISTORY_CHANGE_EVENT);
   };
 }
