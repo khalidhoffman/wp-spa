@@ -66,6 +66,7 @@ module.exports = {
     })(),
     node: {
         'path': true,
+        'querystring': true,
         'url': true
     }
 };

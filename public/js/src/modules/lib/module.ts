@@ -15,7 +15,7 @@ const defaultExtendedProps = [
   'router'
 ];
 
-export class Module {
+export abstract class Module {
   meta: IModuleMeta;
   $window: JQuery<IModuleElement>;
   $root: JQuery<IModuleElement>;
@@ -34,6 +34,8 @@ export class Module {
       this[propertyName] = this.app[propertyName];
     }
   }
+
+  moduleInit?(): any;
 
   $on(event, callback) {
     this.app.on(event, callback)

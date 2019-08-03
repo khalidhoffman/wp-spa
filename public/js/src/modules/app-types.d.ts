@@ -18,6 +18,7 @@ interface IApplicationMeta {
 }
 
 interface IContentLoaderDataRegistry {
+  // TODO implement correct definitions for pages and posts
     pages: any[];
     posts: any[];
     isReady?: boolean;

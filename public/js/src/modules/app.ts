@@ -4,6 +4,7 @@ import { ConfigLoader }    from 'modules/services/config-loader';
 import { ContentLoader }   from 'modules/services/content-loader';
 import * as Controllers    from 'modules/controllers';
 import * as Views          from 'modules/views';
+import { Module }          from 'modules/lib';
 
 export class Application implements IApplication {
   events = {};
@@ -32,7 +33,7 @@ export class Application implements IApplication {
     this.resourceMonitor = new ResourceMonitor();
     this.configLoader = new ConfigLoader(this);
     this.contentLoader = new ContentLoader(this);
-    this.router = new AppRouter(this.meta.baseHREF);
+    this.router = new AppRouter(this, this.meta.baseHREF);
 
     this.router.on(/.*/, (path) => {
       this.emit('$locationChangeSuccess', path, this.previousPath);
@@ -43,6 +44,16 @@ export class Application implements IApplication {
     this.uiController = new Controllers.UIController(this);
     this.htmlView = new Views.HTMLDirective(this);
     this.headView = new Views.HeadDirective(this);
+
+    this.init();
+  }
+
+  get modules(): Module[] {
+    return Object.keys(this).map(key => this[key]).filter(item => item instanceof Module);
+  }
+
+  init() {
+    this.modules.forEach(module => module.moduleInit && module.moduleInit())
   }
 
   $timeout(callback: Function, wait?: number) {

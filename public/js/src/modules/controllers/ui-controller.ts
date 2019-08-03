@@ -11,6 +11,7 @@ import { LoadingView } from 'modules/views/loading';
 // jquery plugins
 import 'modules/views/jquery.one-strict';
 import 'modules/views/jquery.prepended-css';
+import { AppRoute }    from 'modules/lib';
 
 interface IUIControllerFlags {
   showLoadingScreen?: boolean;
@@ -35,13 +36,14 @@ export class UIController extends Module {
     this.$body = $('body');
 
     this.mainSelector = this.configLoader.getMainSelector();
-    this.updateConfiguration();
-
-
     this.loadingView = new LoadingView({
       indicatorType: this.$root.data('wp-spa-loader-type'),
       indicatorColor: this.$root.data('wp-spa-loader-color')
     });
+  }
+
+  moduleInit() {
+    this.updateConfiguration();
 
     if (this.flags.showLoadingScreen) {
       this.loadingView.appendTo(this.$body);
@@ -52,6 +54,7 @@ export class UIController extends Module {
         this.loadingView.show(50);
       })
     }
+
     this.exec(() => {
 
       // show animation on first render
@@ -99,41 +102,30 @@ export class UIController extends Module {
   interceptAction(evt) {
     console.log('ngBody.interceptAction()');
     const targetHref = evt.currentTarget.href || location.href;
-    const route = this.getRouteFromHREF(targetHref);
+    const route: AppRoute = this.router.parseURL(targetHref);
 
     if (route) {
       console.log('ngBody.interceptAction()  - routing to %s', utils.getPathFromUrl(targetHref));
-      evt.preventDefault();
-      if (route == '@') {
+
+      if (route.path === '@' && route.query === '@' && route.hash === '@') {
+        evt.preventDefault();
         // attempting route to current page
         this.shake();
+
+      } else if (route.path !== '@') {
+        evt.preventDefault();
+        const routePath = route.path ? route.path as string : '/';
+        this.router.path(routePath);
+
       } else {
-        this.router.path(route);
+        console.log('ngBody.interceptAction() - no-op');
       }
+
     } else {
       console.log('ngBody.interceptAction() - no-op');
     }
   }
 
-  getRouteFromHREF(href) {
-    let targetHrefMeta = url.parse(href);
-    if (/\/wp\-(admin|login)\/?/.test(targetHrefMeta.path)) {
-      return false;
-    } else if (location.href.match(new RegExp(targetHrefMeta.pathname + '\/?$'))) {
-      return '@';
-    } else if (
-      this.config.captureAll
-
-      // animate for path changes. allow native hash otherwise
-      || targetHrefMeta.hash && url.parse(location.href).pathname != targetHrefMeta.pathname
-
-      || this.contentLoader.hasPageSync(href)
-      || this.contentLoader.hasPostSync(href)) {
-      return targetHrefMeta.pathname
-    } else {
-      return false
-    }
-  }
 
   updateAnimationOptions() {
     this.flags.enforceSmooth = Number(this.config.enforceSmooth) === 1;

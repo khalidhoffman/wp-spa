@@ -22,6 +22,9 @@ export class ContentLoader extends Module {
   constructor(public app: Application) {
     super(app);
     this._cache = {};
+  }
+
+  moduleInit() {
     this.downloadSiteMap();
   }
 

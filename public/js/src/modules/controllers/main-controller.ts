@@ -12,10 +12,9 @@ export class MainController extends Module {
     super(app);
 
     this.config = this.configLoader.getDefaults();
-    this.init();
   }
 
-  async init(): Promise<void> {
+  async moduleInit(): Promise<void> {
 
     await this.configLoader.fetchConfig((err, configData) => {
       this.config = configData || this.config;
