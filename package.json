@@ -33,7 +33,7 @@
     "raw-loader": "^0.5.1",
     "tooltipster": "^4.1.6",
     "webpack": "^1.13.2",
-    "webpack-bundle-analyzer": "^2.2.1"
+    "webpack-bundle-analyzer": "^3.6.0"
   },
   "dependencies": {}
 }
